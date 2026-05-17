@@ -13,7 +13,7 @@ const {
 
 const auth = require('../middleware/auth');
 
-// GET VIDEOS BY COURSE
+// GET VIDEOS
 router.get('/:courseId', auth, getVideosByCourseId);
 
 // CREATE VIDEO
