@@ -1,31 +1,78 @@
-const db = require('../db');
+const User = require('../models/User');
 
-// Get all students (Admin)
+// GET ALL STUDENTS
 const getStudents = async (req, res) => {
+
   try {
-    // Return all users for now, maybe filter by role later
-    const [students] = await db.execute('SELECT id, email, active FROM users');
+
+    const students = await User.find().select(
+
+      '_id name email active role'
+
+    );
+
     res.status(200).json(students);
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+
+    console.log(error);
+
+    res.status(500).json({
+      message: 'Server error'
+    });
+
   }
+
 };
 
-// Block/Unblock student (Admin)
+// BLOCK / UNBLOCK STUDENT
 const updateStudentStatus = async (req, res) => {
+
   try {
+
     const { id } = req.params;
+
     const { active } = req.body;
-    await db.execute('UPDATE users SET active = ? WHERE id = ?', [active ? 1 : 0, id]);
-    res.status(200).json({ message: `Student ${active ? 'unblocked' : 'blocked'} successfully` });
+
+    const updatedStudent = await User.findByIdAndUpdate(
+
+      id,
+
+      { active },
+
+      { new: true }
+
+    );
+
+    if (!updatedStudent) {
+
+      return res.status(404).json({
+        message: 'Student not found'
+      });
+
+    }
+
+    res.status(200).json({
+
+      message: `Student ${active ? 'unblocked' : 'blocked'} successfully`
+
+    });
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+
+    console.log(error);
+
+    res.status(500).json({
+      message: 'Server error'
+    });
+
   }
+
 };
 
 module.exports = {
+
   getStudents,
   updateStudentStatus
+
 };

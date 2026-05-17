@@ -21,6 +21,11 @@ const userSchema = new mongoose.Schema({
   role: {
     type: String,
     default: "student"
+  },
+
+  active: {
+    type: Boolean,
+    default: true
   }
 
 }, {
