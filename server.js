@@ -18,13 +18,10 @@ app.use(express.json());
 // Routes
 const authRoutes = require('./routes/auth');
 const courseRoutes = require('./routes/courses');
-const videoRoutes = require('./routes/videos');
-const studentRoutes = require('./routes/students');
 
+// ENABLED ROUTES
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
-app.use('/api/videos', videoRoutes);
-app.use('/api/students', studentRoutes);
 
 // DATABASE TEST ROUTE
 app.get('/db-test', async (req, res) => {

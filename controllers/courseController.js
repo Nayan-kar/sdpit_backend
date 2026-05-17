@@ -1,73 +1,165 @@
-const db = require('../db');
+const Course = require('../models/Course');
 
-// Get all courses
+// GET ALL COURSES
 const getCourses = async (req, res) => {
+
   try {
-    const [courses] = await db.execute('SELECT * FROM courses');
+
+    const courses = await Course.find();
+
     res.status(200).json(courses);
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+
+    console.log(error);
+
+    res.status(500).json({
+      message: 'Server error'
+    });
+
   }
+
 };
 
-// Get a single course
+// GET SINGLE COURSE
 const getCourseById = async (req, res) => {
+
   try {
+
     const { id } = req.params;
-    const [courses] = await db.execute('SELECT * FROM courses WHERE id = ?', [id]);
-    
-    if (courses.length === 0) {
-      return res.status(404).json({ message: 'Course not found' });
+
+    const course = await Course.findById(id);
+
+    if (!course) {
+
+      return res.status(404).json({
+        message: 'Course not found'
+      });
+
     }
-    res.status(200).json(courses[0]);
+
+    res.status(200).json(course);
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+
+    console.log(error);
+
+    res.status(500).json({
+      message: 'Server error'
+    });
+
   }
+
 };
 
-// Create a course (Admin)
+// CREATE COURSE
 const createCourse = async (req, res) => {
+
   try {
+
     const { name } = req.body;
-    const [result] = await db.execute('INSERT INTO courses (name) VALUES (?)', [name]);
-    res.status(201).json({ id: result.insertId, name });
+
+    const newCourse = await Course.create({
+      name
+    });
+
+    res.status(201).json(newCourse);
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+
+    console.log(error);
+
+    res.status(500).json({
+      message: 'Server error'
+    });
+
   }
+
 };
 
-// Update a course (Admin)
+// UPDATE COURSE
 const updateCourse = async (req, res) => {
+
   try {
+
     const { id } = req.params;
+
     const { name } = req.body;
-    await db.execute('UPDATE courses SET name = ? WHERE id = ?', [name, id]);
-    res.status(200).json({ message: 'Course updated successfully' });
+
+    const updatedCourse = await Course.findByIdAndUpdate(
+
+      id,
+
+      { name },
+
+      { new: true }
+
+    );
+
+    if (!updatedCourse) {
+
+      return res.status(404).json({
+        message: 'Course not found'
+      });
+
+    }
+
+    res.status(200).json({
+      message: 'Course updated successfully',
+      updatedCourse
+    });
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+
+    console.log(error);
+
+    res.status(500).json({
+      message: 'Server error'
+    });
+
   }
+
 };
 
-// Delete a course (Admin)
+// DELETE COURSE
 const deleteCourse = async (req, res) => {
+
   try {
+
     const { id } = req.params;
-    await db.execute('DELETE FROM courses WHERE id = ?', [id]);
-    res.status(200).json({ message: 'Course deleted successfully' });
+
+    const deletedCourse = await Course.findByIdAndDelete(id);
+
+    if (!deletedCourse) {
+
+      return res.status(404).json({
+        message: 'Course not found'
+      });
+
+    }
+
+    res.status(200).json({
+      message: 'Course deleted successfully'
+    });
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+
+    console.log(error);
+
+    res.status(500).json({
+      message: 'Server error'
+    });
+
   }
+
 };
 
 module.exports = {
+
   getCourses,
   getCourseById,
   createCourse,
   updateCourse,
   deleteCourse
+
 };
