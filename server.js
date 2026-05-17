@@ -7,8 +7,9 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 5000;
 
-// Database
-const db = require('./db');
+// MongoDB Connection
+const connectDB = require('./db');
+connectDB();
 
 // Middlewares
 app.use(cors());
@@ -30,12 +31,9 @@ app.get('/db-test', async (req, res) => {
 
   try {
 
-    const [rows] = await db.query('SELECT 1');
-
     res.json({
       success: true,
-      message: 'Database Connected ✅',
-      rows
+      message: 'MongoDB Connected ✅'
     });
 
   } catch (err) {
