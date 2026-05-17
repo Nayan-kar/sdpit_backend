@@ -1,4 +1,4 @@
-const Video = require('../models/videos');
+const Video = require('../models/Video');
 
 // GET VIDEOS BY COURSE ID
 const getVideosByCourseId = async (req, res) => {
