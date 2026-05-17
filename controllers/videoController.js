@@ -1,6 +1,6 @@
 const Video = require('../models/Video');
 
-// GET VIDEOS BY COURSE ID
+// GET VIDEOS
 const getVideosByCourseId = async (req, res) => {
 
   try {
@@ -30,15 +30,13 @@ const createVideo = async (req, res) => {
 
     const { title, url, courseId } = req.body;
 
-    const newVideo = await Video.create({
-
+    const video = await Video.create({
       title,
       url,
       courseId
-
     });
 
-    res.status(201).json(newVideo);
+    res.status(201).json(video);
 
   } catch (error) {
 
@@ -77,21 +75,7 @@ const updateVideo = async (req, res) => {
 
     );
 
-    if (!updatedVideo) {
-
-      return res.status(404).json({
-        message: 'Video not found'
-      });
-
-    }
-
-    res.status(200).json({
-
-      message: 'Video updated successfully',
-
-      updatedVideo
-
-    });
+    res.status(200).json(updatedVideo);
 
   } catch (error) {
 
@@ -112,15 +96,7 @@ const deleteVideo = async (req, res) => {
 
     const { id } = req.params;
 
-    const deletedVideo = await Video.findByIdAndDelete(id);
-
-    if (!deletedVideo) {
-
-      return res.status(404).json({
-        message: 'Video not found'
-      });
-
-    }
+    await Video.findByIdAndDelete(id);
 
     res.status(200).json({
       message: 'Video deleted successfully'
@@ -139,10 +115,8 @@ const deleteVideo = async (req, res) => {
 };
 
 module.exports = {
-
   getVideosByCourseId,
   createVideo,
   updateVideo,
   deleteVideo
-
 };
