@@ -20,12 +20,14 @@ const authRoutes = require('./routes/auth');
 const courseRoutes = require('./routes/courses');
 const videoRoutes = require('./routes/videos');
 const studentRoutes = require('./routes/students');
+const enrollmentRoutes = require('./routes/enrollments');
 
 // ENABLED ROUTES
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/videos', videoRoutes);
 app.use('/api/students', studentRoutes);
+app.use('/api/enrollments', enrollmentRoutes);
 
 // DATABASE TEST ROUTE
 app.get('/db-test', async (req, res) => {
