@@ -15,6 +15,11 @@ const courseSchema = new mongoose.Schema({
   isPaid: {
     type: Boolean,
     default: false
+  },
+
+  duration: {
+    type: Number,
+    default: 30
   }
 
 }, {

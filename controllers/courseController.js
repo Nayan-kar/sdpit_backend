@@ -60,7 +60,8 @@ const createCourse = async (req, res) => {
     const {
       name,
       price,
-      isPaid
+      isPaid,
+      duration
     } = req.body;
 
     const newCourse = await Course.create({
@@ -69,7 +70,9 @@ const createCourse = async (req, res) => {
 
       price: price || 0,
 
-      isPaid: isPaid || false
+      isPaid: isPaid || false,
+
+      duration: duration || 30
 
     });
 
@@ -97,7 +100,8 @@ const updateCourse = async (req, res) => {
     const {
       name,
       price,
-      isPaid
+      isPaid,
+      duration
     } = req.body;
 
     const updatedCourse = await Course.findByIdAndUpdate(
@@ -110,7 +114,9 @@ const updateCourse = async (req, res) => {
 
         price,
 
-        isPaid
+        isPaid,
+
+        duration
 
       },
 
