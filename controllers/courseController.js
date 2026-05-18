@@ -57,10 +57,20 @@ const createCourse = async (req, res) => {
 
   try {
 
-    const { name } = req.body;
+    const {
+      name,
+      price,
+      isPaid
+    } = req.body;
 
     const newCourse = await Course.create({
-      name
+
+      name,
+
+      price: price || 0,
+
+      isPaid: isPaid || false
+
     });
 
     res.status(201).json(newCourse);
@@ -84,13 +94,25 @@ const updateCourse = async (req, res) => {
 
     const { id } = req.params;
 
-    const { name } = req.body;
+    const {
+      name,
+      price,
+      isPaid
+    } = req.body;
 
     const updatedCourse = await Course.findByIdAndUpdate(
 
       id,
 
-      { name },
+      {
+
+        name,
+
+        price,
+
+        isPaid
+
+      },
 
       { new: true }
 
@@ -105,8 +127,11 @@ const updateCourse = async (req, res) => {
     }
 
     res.status(200).json({
+
       message: 'Course updated successfully',
+
       updatedCourse
+
     });
 
   } catch (error) {
