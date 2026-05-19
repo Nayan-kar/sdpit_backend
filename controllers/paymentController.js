@@ -11,7 +11,7 @@ const razorpay = new Razorpay({
 
   key_id: process.env.RAZORPAY_KEY_ID,
 
-  key_secret: process.env.RAZORPAY_SECRET
+  key_secret: process.env.RAZORPAY_KEY_SECRET
 
 });
 
@@ -24,21 +24,23 @@ const createOrder = async (req, res) => {
 
     const userId = req.user.id;
 
-    // FIND COURSE
+    // VALIDATE COURSE
     const course = await Course.findById(courseId);
 
     if (!course) {
 
       return res.status(404).json({
+        success: false,
         message: 'Course not found'
       });
 
     }
 
-    // CHECK PAID COURSE
+    // CHECK IF COURSE IS PAID
     if (!course.isPaid) {
 
       return res.status(400).json({
+        success: false,
         message: 'This is a free course'
       });
 
@@ -59,27 +61,30 @@ const createOrder = async (req, res) => {
     if (existingEnrollment) {
 
       return res.status(400).json({
-        message: 'Already enrolled'
+        success: false,
+        message: 'Already enrolled in this course'
       });
 
     }
 
-    // CREATE ORDER
+    // CREATE RAZORPAY ORDER
     const options = {
 
-      amount: course.price * 100,
+      amount: Number(course.price) * 100,
 
       currency: 'INR',
 
-      receipt: `receipt_${Date.now()}`
+      receipt: `receipt_${Date.now()}`,
+
+      payment_capture: 1
 
     };
 
-    const order = await razorpay.orders.create(
-      options
-    );
+    const order = await razorpay.orders.create(options);
 
     res.status(200).json({
+
+      success: true,
 
       order,
 
@@ -89,10 +94,14 @@ const createOrder = async (req, res) => {
 
   } catch (error) {
 
-    console.log(error);
+    console.log('CREATE ORDER ERROR:', error);
 
     res.status(500).json({
-      message: 'Server error'
+
+      success: false,
+
+      message: 'Failed to create order'
+
     });
 
   }
@@ -118,28 +127,30 @@ const verifyPayment = async (req, res) => {
 
     const userId = req.user.id;
 
-    // VERIFY SIGNATURE
-    const sign =
+    // GENERATE SIGNATURE
+    const body =
 
       razorpay_order_id +
-      '|' +
+      "|" +
       razorpay_payment_id;
 
-    const expectedSign = crypto
+    const expectedSignature = crypto
       .createHmac(
 
         'sha256',
 
-        process.env.RAZORPAY_SECRET
+        process.env.RAZORPAY_KEY_SECRET
 
       )
-      .update(sign.toString())
+      .update(body.toString())
       .digest('hex');
 
-    // INVALID SIGNATURE
-    if (razorpay_signature !== expectedSign) {
+    // VERIFY SIGNATURE
+    if (expectedSignature !== razorpay_signature) {
 
       return res.status(400).json({
+
+        success: false,
 
         message: 'Invalid payment signature'
 
@@ -148,19 +159,45 @@ const verifyPayment = async (req, res) => {
     }
 
     // FIND COURSE
-    const course = await Course.findById(
-      courseId
-    );
+    const course = await Course.findById(courseId);
 
     if (!course) {
 
       return res.status(404).json({
+
+        success: false,
+
         message: 'Course not found'
+
       });
 
     }
 
-    // EXPIRY DATE
+    // CHECK EXISTING ENROLLMENT AGAIN
+    const existingEnrollment =
+      await Enrollment.findOne({
+
+        userId,
+
+        courseId,
+
+        expiryDate: { $gt: new Date() }
+
+      });
+
+    if (existingEnrollment) {
+
+      return res.status(400).json({
+
+        success: false,
+
+        message: 'Already enrolled'
+
+      });
+
+    }
+
+    // CREATE EXPIRY DATE
     const expiryDate = new Date();
 
     expiryDate.setDate(
@@ -170,7 +207,7 @@ const verifyPayment = async (req, res) => {
 
     );
 
-    // CREATE ENROLLMENT
+    // SAVE ENROLLMENT
     await Enrollment.create({
 
       userId,
@@ -179,7 +216,11 @@ const verifyPayment = async (req, res) => {
 
       expiryDate,
 
-      paymentStatus: 'paid'
+      paymentStatus: 'paid',
+
+      razorpay_order_id,
+
+      razorpay_payment_id
 
     });
 
@@ -187,16 +228,20 @@ const verifyPayment = async (req, res) => {
 
       success: true,
 
-      message: 'Payment successful'
+      message: 'Payment verified successfully'
 
     });
 
   } catch (error) {
 
-    console.log(error);
+    console.log('VERIFY PAYMENT ERROR:', error);
 
     res.status(500).json({
-      message: 'Server error'
+
+      success: false,
+
+      message: 'Payment verification failed'
+
     });
 
   }
