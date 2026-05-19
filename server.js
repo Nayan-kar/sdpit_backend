@@ -14,6 +14,7 @@ connectDB();
 // Middlewares
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
 
 // Routes
 const authRoutes = require('./routes/auth');
@@ -22,6 +23,7 @@ const videoRoutes = require('./routes/videos');
 const studentRoutes = require('./routes/students');
 const enrollmentRoutes = require('./routes/enrollments');
 const paymentRoutes = require('./routes/payments');
+
 
 // ENABLED ROUTES
 app.use('/api/auth', authRoutes);

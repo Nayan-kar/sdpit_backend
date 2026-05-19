@@ -2,6 +2,10 @@ const express = require('express');
 
 const router = express.Router();
 
+const auth = require('../middleware/auth');
+
+const upload = require('../middleware/upload');
+
 const {
 
   getCourses,
@@ -12,21 +16,33 @@ const {
 
 } = require('../controllers/courseController');
 
-const auth = require('../middleware/auth');
-
 // GET ALL COURSES
-router.get('/', auth, getCourses);
+router.get('/', getCourses);
 
 // GET SINGLE COURSE
-router.get('/:id', auth, getCourseById);
+router.get('/:id', getCourseById);
 
 // CREATE COURSE
-router.post('/', auth, createCourse);
+router.post(
+  '/',
+  auth,
+  upload.single('image'),
+  createCourse
+);
 
 // UPDATE COURSE
-router.put('/:id', auth, updateCourse);
+router.put(
+  '/:id',
+  auth,
+  upload.single('image'),
+  updateCourse
+);
 
 // DELETE COURSE
-router.delete('/:id', auth, deleteCourse);
+router.delete(
+  '/:id',
+  auth,
+  deleteCourse
+);
 
 module.exports = router;

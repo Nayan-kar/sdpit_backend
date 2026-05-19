@@ -72,7 +72,11 @@ const createCourse = async (req, res) => {
 
       isPaid: isPaid || false,
 
-      duration: duration || 30
+      duration: duration || 30,
+
+      image: req.file
+        ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`
+        : ''
 
     });
 
@@ -101,7 +105,8 @@ const updateCourse = async (req, res) => {
       name,
       price,
       isPaid,
-      duration
+      duration,
+      image
     } = req.body;
 
     const updatedCourse = await Course.findByIdAndUpdate(
@@ -116,7 +121,11 @@ const updateCourse = async (req, res) => {
 
         isPaid,
 
-        duration
+        duration,
+
+        image: req.file
+          ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`
+          : image
 
       },
 

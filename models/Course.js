@@ -20,10 +20,19 @@ const courseSchema = new mongoose.Schema({
   duration: {
     type: Number,
     default: 30
+  },
+
+  // NEW IMAGE FIELD
+  image: {
+    type: String,
+    default: ''
   }
 
 }, {
   timestamps: true
 });
 
-module.exports = mongoose.model("Course", courseSchema);
+module.exports = mongoose.model(
+  "Course",
+  courseSchema
+);
