@@ -1,5 +1,6 @@
 const Course = require('../models/Course');
 
+
 // GET ALL COURSES
 const getCourses = async (req, res) => {
 
@@ -7,19 +8,30 @@ const getCourses = async (req, res) => {
 
     const courses = await Course.find();
 
-    res.status(200).json(courses);
+    res.status(200).json({
+
+      success: true,
+
+      courses
+
+    });
 
   } catch (error) {
 
     console.log(error);
 
     res.status(500).json({
-      message: 'Server error'
+
+      success: false,
+
+      message: error.message
+
     });
 
   }
 
 };
+
 
 // GET SINGLE COURSE
 const getCourseById = async (req, res) => {
@@ -33,24 +45,39 @@ const getCourseById = async (req, res) => {
     if (!course) {
 
       return res.status(404).json({
+
+        success: false,
+
         message: 'Course not found'
+
       });
 
     }
 
-    res.status(200).json(course);
+    res.status(200).json({
+
+      success: true,
+
+      course
+
+    });
 
   } catch (error) {
 
     console.log(error);
 
     res.status(500).json({
-      message: 'Server error'
+
+      success: false,
+
+      message: error.message
+
     });
 
   }
 
 };
+
 
 // CREATE COURSE
 const createCourse = async (req, res) => {
@@ -58,41 +85,76 @@ const createCourse = async (req, res) => {
   try {
 
     const {
-      name,
-      price,
-      isPaid,
-      duration
+
+      title,
+      description,
+      duration,
+      fees,
+      category,
+      instructor
+
     } = req.body;
 
+    // VALIDATION
+    if (!title || !description) {
+
+      return res.status(400).json({
+
+        success: false,
+
+        message: 'Title and description are required'
+
+      });
+
+    }
+
+    // CREATE COURSE
     const newCourse = await Course.create({
 
-      name,
+      title,
 
-      price: price || 0,
+      description,
 
-      isPaid: isPaid || false,
+      duration,
 
-      duration: duration || 30,
+      fees,
 
-      image: req.file
+      category,
+
+      instructor,
+
+      thumbnail: req.file
         ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`
         : ''
 
     });
 
-    res.status(201).json(newCourse);
+    res.status(201).json({
+
+      success: true,
+
+      message: 'Course created successfully',
+
+      course: newCourse
+
+    });
 
   } catch (error) {
 
     console.log(error);
 
     res.status(500).json({
-      message: 'Server error'
+
+      success: false,
+
+      message: error.message
+
     });
 
   }
 
 };
+
 
 // UPDATE COURSE
 const updateCourse = async (req, res) => {
@@ -102,11 +164,15 @@ const updateCourse = async (req, res) => {
     const { id } = req.params;
 
     const {
-      name,
-      price,
-      isPaid,
+
+      title,
+      description,
       duration,
-      image
+      fees,
+      category,
+      instructor,
+      thumbnail
+
     } = req.body;
 
     const updatedCourse = await Course.findByIdAndUpdate(
@@ -115,17 +181,21 @@ const updateCourse = async (req, res) => {
 
       {
 
-        name,
+        title,
 
-        price,
-
-        isPaid,
+        description,
 
         duration,
 
-        image: req.file
+        fees,
+
+        category,
+
+        instructor,
+
+        thumbnail: req.file
           ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`
-          : image
+          : thumbnail
 
       },
 
@@ -136,16 +206,22 @@ const updateCourse = async (req, res) => {
     if (!updatedCourse) {
 
       return res.status(404).json({
+
+        success: false,
+
         message: 'Course not found'
+
       });
 
     }
 
     res.status(200).json({
 
+      success: true,
+
       message: 'Course updated successfully',
 
-      updatedCourse
+      course: updatedCourse
 
     });
 
@@ -154,12 +230,17 @@ const updateCourse = async (req, res) => {
     console.log(error);
 
     res.status(500).json({
-      message: 'Server error'
+
+      success: false,
+
+      message: error.message
+
     });
 
   }
 
 };
+
 
 // DELETE COURSE
 const deleteCourse = async (req, res) => {
@@ -173,13 +254,21 @@ const deleteCourse = async (req, res) => {
     if (!deletedCourse) {
 
       return res.status(404).json({
+
+        success: false,
+
         message: 'Course not found'
+
       });
 
     }
 
     res.status(200).json({
+
+      success: true,
+
       message: 'Course deleted successfully'
+
     });
 
   } catch (error) {
@@ -187,12 +276,17 @@ const deleteCourse = async (req, res) => {
     console.log(error);
 
     res.status(500).json({
-      message: 'Server error'
+
+      success: false,
+
+      message: error.message
+
     });
 
   }
 
 };
+
 
 module.exports = {
 

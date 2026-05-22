@@ -9,12 +9,15 @@ const {
 
 } = require('../controllers/studentController');
 
-const auth = require('../middleware/auth');
+const protect = require('../middlewares/authMiddleware');
+
 
 // GET ALL STUDENTS
-router.get('/', auth, getStudents);
+router.get('/', protect, getStudents);
+
 
 // BLOCK / UNBLOCK STUDENT
-router.put('/:id', auth, updateStudentStatus);
+router.put('/:id', protect, updateStudentStatus);
+
 
 module.exports = router;

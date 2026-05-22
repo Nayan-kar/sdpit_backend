@@ -2,9 +2,11 @@ const express = require('express');
 
 const router = express.Router();
 
-const auth = require('../middleware/auth');
+const protect = require('../middlewares/authMiddleware');
 
-const upload = require('../middleware/upload');
+const adminMiddleware = require('../middlewares/adminMiddleware');
+
+const upload = require('../middlewares/upload');
 
 const {
 
@@ -16,33 +18,42 @@ const {
 
 } = require('../controllers/courseController');
 
+
 // GET ALL COURSES
 router.get('/', getCourses);
+
 
 // GET SINGLE COURSE
 router.get('/:id', getCourseById);
 
+
 // CREATE COURSE
 router.post(
   '/',
-  auth,
-  upload.single('image'),
+  protect,
+  adminMiddleware,
+  upload.single('thumbnail'),
   createCourse
 );
+
 
 // UPDATE COURSE
 router.put(
   '/:id',
-  auth,
-  upload.single('image'),
+  protect,
+  adminMiddleware,
+  upload.single('thumbnail'),
   updateCourse
 );
+
 
 // DELETE COURSE
 router.delete(
   '/:id',
-  auth,
+  protect,
+  adminMiddleware,
   deleteCourse
 );
+
 
 module.exports = router;

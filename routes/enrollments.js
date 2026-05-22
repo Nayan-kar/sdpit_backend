@@ -2,7 +2,7 @@ const express = require('express');
 
 const router = express.Router();
 
-const auth = require('../middleware/auth');
+const protect = require('../middlewares/authMiddleware');
 
 const {
 
@@ -11,10 +11,21 @@ const {
 
 } = require('../controllers/enrollmentController');
 
+
 // ENROLL FREE COURSE
-router.post('/free-enroll', auth, enrollFreeCourse);
+router.post(
+  '/free-enroll',
+  protect,
+  enrollFreeCourse
+);
+
 
 // GET MY COURSES
-router.get('/my-courses', auth, getMyCourses);
+router.get(
+  '/my-courses',
+  protect,
+  getMyCourses
+);
+
 
 module.exports = router;

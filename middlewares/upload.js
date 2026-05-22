@@ -2,7 +2,8 @@ const multer = require('multer');
 
 const path = require('path');
 
-// STORAGE
+
+// STORAGE CONFIGURATION
 const storage = multer.diskStorage({
 
   destination: function (req, file, cb) {
@@ -31,34 +32,36 @@ const storage = multer.diskStorage({
 
 });
 
+
 // FILE FILTER
 const fileFilter = (req, file, cb) => {
 
   const allowedTypes = /jpeg|jpg|png|webp/;
 
-  const extname =
-    allowedTypes.test(
-      path.extname(file.originalname).toLowerCase()
-    );
+  // CHECK EXTENSION
+  const extname = allowedTypes.test(
+    path.extname(file.originalname).toLowerCase()
+  );
 
-  const mimetype =
-    allowedTypes.test(file.mimetype);
+  // CHECK MIME TYPE
+  const mimetype = allowedTypes.test(file.mimetype);
 
   if (extname && mimetype) {
 
     return cb(null, true);
 
-  } else {
-
-    cb(
-      new Error(
-        'Only images are allowed'
-      )
-    );
-
   }
 
+  return cb(
+
+    new Error(
+      'Only .jpg, .jpeg, .png and .webp image files are allowed'
+    )
+
+  );
+
 };
+
 
 // MULTER CONFIG
 const upload = multer({
@@ -74,5 +77,6 @@ const upload = multer({
   }
 
 });
+
 
 module.exports = upload;

@@ -1,46 +1,143 @@
 const User = require('../models/User');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 
-/// REGISTER
+const bcrypt = require('bcryptjs');
+
+const validator = require('validator');
+
+const generateToken = require('../utils/generateToken');
+
+const generateStudentId = require('../utils/generateStudentId');
+
+const generateUsername = require('../utils/generateUsername');
+
+
+// REGISTER USER
 const register = async (req, res) => {
 
   try {
 
-    const { name, email, password } = req.body;
+    const {
+      fullName,
+      email,
+      mobile,
+      dob,
+      password
+    } = req.body;
 
-    // CHECK USER
+    // REQUIRED FIELDS
+    if (!fullName || !email || !password) {
+
+      return res.status(400).json({
+
+        success: false,
+
+        message: 'Please fill all required fields'
+
+      });
+
+    }
+
+    // EMAIL VALIDATION
+    if (!validator.isEmail(email)) {
+
+      return res.status(400).json({
+
+        success: false,
+
+        message: 'Invalid email format'
+
+      });
+
+    }
+
+    // STRONG PASSWORD VALIDATION
+    const strongPasswordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+    if (!strongPasswordRegex.test(password)) {
+
+      return res.status(400).json({
+
+        success: false,
+
+        message:
+          'Weak password. Password must contain minimum 8 characters, one uppercase letter, one lowercase letter, one number and one special symbol.'
+
+      });
+
+    }
+
+    // CHECK EXISTING USER
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
 
       return res.status(400).json({
+
+        success: false,
+
         message: 'User already exists'
+
       });
 
     }
 
     // HASH PASSWORD
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const salt = await bcrypt.genSalt(10);
+
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // GENERATE STUDENT ID
+    const studentId = generateStudentId();
+
+    // GENERATE USERNAME
+    const username = generateUsername(fullName);
 
     // CREATE USER
     const newUser = await User.create({
 
-      name: name || "Student",
+      fullName,
 
       email,
 
-      password: hashedPassword
+      mobile,
+
+      dob,
+
+      password: hashedPassword,
+
+      studentId,
+
+      username
 
     });
 
+    // GENERATE TOKEN
+    const token = generateToken(newUser._id);
+
+    // RESPONSE
     res.status(201).json({
+
+      success: true,
 
       message: 'User registered successfully',
 
+      token,
+
       user: {
+
         id: newUser._id,
-        email: newUser.email
+
+        fullName: newUser.fullName,
+
+        email: newUser.email,
+
+        studentId: newUser.studentId,
+
+        username: newUser.username,
+
+        role: newUser.role
+
       }
 
     });
@@ -50,13 +147,19 @@ const register = async (req, res) => {
     console.log(error);
 
     res.status(500).json({
+
+      success: false,
+
       message: error.message
+
     });
 
   }
 
 };
-// LOGIN
+
+
+// LOGIN USER
 const login = async (req, res) => {
 
   try {
@@ -69,7 +172,11 @@ const login = async (req, res) => {
     if (!user) {
 
       return res.status(404).json({
+
+        success: false,
+
         message: 'User not found'
+
       });
 
     }
@@ -80,43 +187,40 @@ const login = async (req, res) => {
     if (!isMatch) {
 
       return res.status(401).json({
+
+        success: false,
+
         message: 'Invalid credentials'
+
       });
 
     }
 
-    // ROLE
-    const role = email === 'admin@sdpit.in'
-      ? 'admin'
-      : 'student';
-
-    // TOKEN
-    const token = jwt.sign(
-
-      {
-        id: user._id,
-        email: user.email,
-        role
-      },
-
-      process.env.JWT_SECRET,
-
-      {
-        expiresIn: '24h'
-      }
-
-    );
+    // GENERATE TOKEN
+    const token = generateToken(user._id);
 
     res.status(200).json({
+
+      success: true,
 
       message: 'Login successful',
 
       token,
 
       user: {
+
         id: user._id,
+
+        fullName: user.fullName,
+
         email: user.email,
-        role
+
+        studentId: user.studentId,
+
+        username: user.username,
+
+        role: user.role
+
       }
 
     });
@@ -126,12 +230,17 @@ const login = async (req, res) => {
     console.log(error);
 
     res.status(500).json({
+
+      success: false,
+
       message: 'Server error'
+
     });
 
   }
 
 };
+
 
 module.exports = {
   register,

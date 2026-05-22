@@ -4,14 +4,39 @@ const router = express.Router();
 
 const videoController = require('../controllers/videoController');
 
-const auth = require('../middleware/auth');
+const protect = require('../middlewares/authMiddleware');
 
-router.get('/:courseId', auth, videoController.getVideosByCourseId);
 
-router.post('/', auth, videoController.createVideo);
+// GET VIDEOS BY COURSE ID
+router.get(
+  '/:courseId',
+  protect,
+  videoController.getVideosByCourseId
+);
 
-router.put('/:id', auth, videoController.updateVideo);
 
-router.delete('/:id', auth, videoController.deleteVideo);
+// CREATE VIDEO
+router.post(
+  '/',
+  protect,
+  videoController.createVideo
+);
+
+
+// UPDATE VIDEO
+router.put(
+  '/:id',
+  protect,
+  videoController.updateVideo
+);
+
+
+// DELETE VIDEO
+router.delete(
+  '/:id',
+  protect,
+  videoController.deleteVideo
+);
+
 
 module.exports = router;

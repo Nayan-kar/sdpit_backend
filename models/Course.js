@@ -1,38 +1,47 @@
 const mongoose = require("mongoose");
 
-const courseSchema = new mongoose.Schema({
+const courseSchema = new mongoose.Schema(
+{
+    title: {
+        type: String,
+        required: true
+    },
 
-  name: {
-    type: String,
-    required: true
-  },
+    description: {
+        type: String,
+        required: true
+    },
 
-  price: {
-    type: Number,
-    default: 0
-  },
+    thumbnail: {
+        type: String,
+        default: ''
+    },
 
-  isPaid: {
-    type: Boolean,
-    default: false
-  },
+    duration: {
+        type: String
+    },
 
-  duration: {
-    type: Number,
-    default: 30
-  },
+    fees: {
+        type: Number,
+        default: 0
+    },
 
-  // NEW IMAGE FIELD
-  image: {
-    type: String,
-    default: ''
-  }
+    category: {
+        type: String
+    },
 
-}, {
-  timestamps: true
-});
+    instructor: {
+        type: String
+    },
 
-module.exports = mongoose.model(
-  "Course",
-  courseSchema
+    isPublished: {
+        type: Boolean,
+        default: false
+    }
+},
+{
+    timestamps: true
+}
 );
+
+module.exports = mongoose.model("Course", courseSchema);
