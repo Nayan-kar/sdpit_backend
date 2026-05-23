@@ -4,11 +4,31 @@ const bcrypt = require('bcryptjs');
 
 const validator = require('validator');
 
+const otpGenerator = require('otp-generator');
+
+const nodemailer = require('nodemailer');
+
 const generateToken = require('../utils/generateToken');
 
 const generateStudentId = require('../utils/generateStudentId');
 
 const generateUsername = require('../utils/generateUsername');
+
+
+// EMAIL TRANSPORTER
+const transporter = nodemailer.createTransport({
+
+  service: 'gmail',
+
+  auth: {
+
+    user: process.env.EMAIL_USER,
+
+    pass: process.env.EMAIL_PASS
+
+  }
+
+});
 
 
 // REGISTER USER
@@ -93,6 +113,18 @@ const register = async (req, res) => {
     // GENERATE USERNAME
     const username = generateUsername(fullName);
 
+    // GENERATE OTP
+    const otp = otpGenerator.generate(6, {
+
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars: false
+
+    });
+
+    // OTP EXPIRY (10 MIN)
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
     // CREATE USER
     const newUser = await User.create({
 
@@ -108,9 +140,42 @@ const register = async (req, res) => {
 
       studentId,
 
-      username
+      username,
+
+      otp,
+
+      otpExpiry,
+
+      isVerified: false
 
     });
+
+    // SEND EMAIL
+   // SEND EMAIL
+const info = await transporter.sendMail({
+
+  from: process.env.EMAIL_USER,
+
+  to: email,
+
+  subject: 'SDPIT LMS Email Verification OTP',
+
+  html: `
+
+    <h2>Welcome to SDPIT LMS</h2>
+
+    <p>Your OTP for email verification is:</p>
+
+    <h1>${otp}</h1>
+
+    <p>This OTP will expire in 10 minutes.</p>
+
+  `
+
+});
+
+console.log('EMAIL SENT:', info.response);
+
 
     // GENERATE TOKEN
     const token = generateToken(newUser._id);
@@ -120,7 +185,7 @@ const register = async (req, res) => {
 
       success: true,
 
-      message: 'User registered successfully',
+      message: 'OTP sent to email successfully',
 
       token,
 
@@ -136,9 +201,92 @@ const register = async (req, res) => {
 
         username: newUser.username,
 
-        role: newUser.role
+        role: newUser.role,
+
+        isVerified: newUser.isVerified
 
       }
+
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+
+      success: false,
+
+      message: error.message
+
+    });
+
+  }
+
+};
+
+
+// VERIFY OTP
+const verifyOtp = async (req, res) => {
+
+  try {
+
+    const { email, otp } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+
+      return res.status(404).json({
+
+        success: false,
+
+        message: 'User not found'
+
+      });
+
+    }
+
+    // CHECK OTP
+    if (user.otp !== otp) {
+
+      return res.status(400).json({
+
+        success: false,
+
+        message: 'Invalid OTP'
+
+      });
+
+    }
+
+    // CHECK EXPIRY
+    if (user.otpExpiry < new Date()) {
+
+      return res.status(400).json({
+
+        success: false,
+
+        message: 'OTP expired'
+
+      });
+
+    }
+
+    // VERIFY USER
+    user.isVerified = true;
+
+    user.otp = null;
+
+    user.otpExpiry = null;
+
+    await user.save();
+
+    res.status(200).json({
+
+      success: true,
+
+      message: 'Email verified successfully'
 
     });
 
@@ -196,6 +344,19 @@ const login = async (req, res) => {
 
     }
 
+    // CHECK EMAIL VERIFIED
+    if (!user.isVerified) {
+
+      return res.status(401).json({
+
+        success: false,
+
+        message: 'Please verify your email first'
+
+      });
+
+    }
+
     // GENERATE TOKEN
     const token = generateToken(user._id);
 
@@ -219,7 +380,9 @@ const login = async (req, res) => {
 
         username: user.username,
 
-        role: user.role
+        role: user.role,
+
+        isVerified: user.isVerified
 
       }
 
@@ -244,5 +407,6 @@ const login = async (req, res) => {
 
 module.exports = {
   register,
-  login
+  login,
+  verifyOtp
 };
