@@ -84,6 +84,10 @@ const createCourse = async (req, res) => {
 
   try {
 
+    console.log('BODY:', req.body);
+
+    console.log('FILE:', req.file);
+
     const {
 
       title,
@@ -108,6 +112,11 @@ const createCourse = async (req, res) => {
 
     }
 
+    // THUMBNAIL URL
+    const thumbnailUrl = req.file
+      ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`
+      : '';
+
     // CREATE COURSE
     const newCourse = await Course.create({
 
@@ -123,9 +132,7 @@ const createCourse = async (req, res) => {
 
       instructor,
 
-      thumbnail: req.file
-        ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`
-        : ''
+      thumbnail: thumbnailUrl
 
     });
 
