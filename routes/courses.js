@@ -1,65 +1,127 @@
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
+const express = require('express');
+
+const router = express.Router();
 
 // ======================================
-// PROTECT MIDDLEWARE
+// AUTH MIDDLEWARE
 // ======================================
 
-const protect = async (req, res, next) => {
-  try {
+const {
 
-    const authHeader = req.headers.authorization;
+  protect,
 
-    // CHECK TOKEN
-    if (
-      !authHeader ||
-      !authHeader.startsWith("Bearer ")
-    ) {
-      return res.status(401).json({
-        success: false,
-        message: "Access denied. No token provided.",
-      });
-    }
+  authorizeRoles
 
-    // EXTRACT TOKEN
-    const token = authHeader.split(" ")[1];
+} = require(
+  '../middlewares/authMiddleware'
+);
 
-    // VERIFY TOKEN
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET
-    );
+// ======================================
+// FILE UPLOAD MIDDLEWARE
+// ======================================
 
-    // GET USER
-    const user = await User.findById(
-      decoded.id
-    ).select("-password");
+const upload = require(
+  '../middlewares/upload'
+);
 
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "User not found",
-      });
-    }
+// ======================================
+// CONTROLLERS
+// ======================================
 
-    // ATTACH USER
-    req.user = user;
+const {
 
-    next();
+  getCourses,
 
-  } catch (error) {
+  getCourseById,
 
-    console.log(error);
+  createCourse,
 
-    return res.status(401).json({
-      success: false,
-      message: "Invalid token",
-    });
-  }
-};
+  updateCourse,
+
+  deleteCourse
+
+} = require(
+  '../controllers/courseController'
+);
+
+// ======================================
+// GET ALL COURSES
+// ======================================
+
+router.get(
+
+  '/',
+
+  getCourses
+
+);
+
+// ======================================
+// GET SINGLE COURSE
+// ======================================
+
+router.get(
+
+  '/:id',
+
+  getCourseById
+
+);
+
+// ======================================
+// CREATE COURSE
+// ======================================
+
+router.post(
+
+  '/',
+
+  protect,
+
+  authorizeRoles('admin'),
+
+  upload.single('thumbnail'),
+
+  createCourse
+
+);
+
+// ======================================
+// UPDATE COURSE
+// ======================================
+
+router.put(
+
+  '/:id',
+
+  protect,
+
+  authorizeRoles('admin'),
+
+  upload.single('thumbnail'),
+
+  updateCourse
+
+);
+
+// ======================================
+// DELETE COURSE
+// ======================================
+
+router.delete(
+
+  '/:id',
+
+  protect,
+
+  authorizeRoles('admin'),
+
+  deleteCourse
+
+);
 
 // ======================================
 // EXPORT
 // ======================================
 
-module.exports = protect;
+module.exports = router;

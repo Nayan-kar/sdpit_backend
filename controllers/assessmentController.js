@@ -1,320 +1,664 @@
 const Assessment = require("../models/Assessment");
+
 const Question = require("../models/Question");
+
 const ExamAttempt = require("../models/ExamAttempt");
+
+// ======================================================
+// GET ALL ASSESSMENTS
+// ======================================================
+
+const getAssessments = async (
+
+  req,
+
+  res
+
+) => {
+
+  try {
+
+    const assessments =
+      await Assessment.find()
+
+        .populate(
+          "course",
+          "title"
+        )
+
+        .sort({
+          createdAt: -1
+        });
+
+    res.status(200).json({
+
+      success: true,
+
+      assessments
+
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+
+      success: false,
+
+      message:
+        "Failed to fetch assessments"
+
+    });
+
+  }
+
+};
 
 // ======================================================
 // CREATE ASSESSMENT
 // ======================================================
 
-const createAssessment = async (req, res) => {
-    try {
+const createAssessment = async (
 
-        const {
-            course,
-            title,
-            description,
-            duration,
-            passingMarks,
-            totalMCQQuestions,
-            totalCodingQuestions
-        } = req.body;
+  req,
 
-        const assessment = await Assessment.create({
-            course,
-            title,
-            description,
-            duration,
-            passingMarks,
-            totalMCQQuestions,
-            totalCodingQuestions,
-            createdBy: req.user._id
-        });
+  res
 
-        res.status(201).json({
-            success: true,
-            message: "Assessment created successfully",
-            assessment
-        });
+) => {
 
-    } catch (error) {
-        console.log(error);
+  try {
 
-        res.status(500).json({
-            success: false,
-            message: "Failed to create assessment"
-        });
-    }
+    const {
+
+      course,
+
+      title,
+
+      description,
+
+      duration,
+
+      passingMarks,
+
+      totalMCQQuestions,
+
+      totalCodingQuestions
+
+    } = req.body;
+
+    const assessment =
+      await Assessment.create({
+
+        course,
+
+        title,
+
+        description,
+
+        duration,
+
+        passingMarks,
+
+        totalMCQQuestions,
+
+        totalCodingQuestions,
+
+        createdBy:
+          req.user._id
+
+      });
+
+    res.status(201).json({
+
+      success: true,
+
+      message:
+        "Assessment created successfully",
+
+      assessment
+
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+
+      success: false,
+
+      message:
+        "Failed to create assessment"
+
+    });
+
+  }
+
 };
 
 // ======================================================
 // ADD QUESTION
 // ======================================================
 
-const addQuestion = async (req, res) => {
-    try {
+const addQuestion = async (
 
-        const {
-            assessment,
-            course,
-            type,
-            question,
-            options,
-            correctAnswer,
-            marks,
-            difficulty,
-            explanation,
+  req,
 
-            // Coding fields
-            starterCode,
-            inputFormat,
-            outputFormat,
-            constraints,
-            sampleInput,
-            sampleOutput,
-            expectedSolution
+  res
 
-        } = req.body;
+) => {
 
-        const newQuestion = await Question.create({
-            assessment,
-            course,
-            type,
-            question,
-            options,
-            correctAnswer,
-            marks,
-            difficulty,
-            explanation,
+  try {
 
-            starterCode,
-            inputFormat,
-            outputFormat,
-            constraints,
-            sampleInput,
-            sampleOutput,
-            expectedSolution,
+    const {
 
-            createdBy: req.user._id
-        });
+      assessment,
 
-        res.status(201).json({
-            success: true,
-            message: "Question added successfully",
-            question: newQuestion
-        });
+      course,
 
-    } catch (error) {
-        console.log(error);
+      type,
 
-        res.status(500).json({
-            success: false,
-            message: "Failed to add question"
-        });
-    }
+      question,
+
+      options,
+
+      correctAnswer,
+
+      marks,
+
+      difficulty,
+
+      explanation,
+
+      // CODING FIELDS
+
+      starterCode,
+
+      inputFormat,
+
+      outputFormat,
+
+      constraints,
+
+      sampleInput,
+
+      sampleOutput,
+
+      expectedSolution
+
+    } = req.body;
+
+    const newQuestion =
+      await Question.create({
+
+        assessment,
+
+        course,
+
+        type,
+
+        question,
+
+        options,
+
+        correctAnswer,
+
+        marks,
+
+        difficulty,
+
+        explanation,
+
+        starterCode,
+
+        inputFormat,
+
+        outputFormat,
+
+        constraints,
+
+        sampleInput,
+
+        sampleOutput,
+
+        expectedSolution,
+
+        createdBy:
+          req.user._id
+
+      });
+
+    res.status(201).json({
+
+      success: true,
+
+      message:
+        "Question added successfully",
+
+      question:
+        newQuestion
+
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+
+      success: false,
+
+      message:
+        "Failed to add question"
+
+    });
+
+  }
+
 };
 
 // ======================================================
 // GET RANDOMIZED QUESTIONS
 // ======================================================
 
-const getAssessmentQuestions = async (req, res) => {
+const getAssessmentQuestions =
+  async (req, res) => {
+
     try {
 
-        const { assessmentId } = req.params;
+      const { assessmentId } =
+        req.params;
 
-        const assessment = await Assessment.findById(assessmentId);
+      const assessment =
+        await Assessment.findById(
+          assessmentId
+        );
 
-        if (!assessment) {
-            return res.status(404).json({
-                success: false,
-                message: "Assessment not found"
-            });
-        }
+      if (!assessment) {
 
-        // RANDOM MCQ QUESTIONS
-        const mcqQuestions = await Question.aggregate([
-            {
-                $match: {
-                    assessment: assessment._id,
-                    type: "mcq",
-                    isActive: true
-                }
-            },
-            { $sample: { size: assessment.totalMCQQuestions } }
-        ]);
+        return res.status(404).json({
 
-        // RANDOM CODING QUESTIONS
-        const codingQuestions = await Question.aggregate([
-            {
-                $match: {
-                    assessment: assessment._id,
-                    type: "coding",
-                    isActive: true
-                }
-            },
-            { $sample: { size: assessment.totalCodingQuestions } }
-        ]);
+          success: false,
 
-        res.status(200).json({
-            success: true,
-            mcqQuestions,
-            codingQuestions
+          message:
+            "Assessment not found"
+
         });
+
+      }
+
+      // RANDOM MCQ QUESTIONS
+
+      const mcqQuestions =
+        await Question.aggregate([
+
+          {
+
+            $match: {
+
+              assessment:
+                assessment._id,
+
+              type: "mcq",
+
+              isActive: true
+
+            }
+
+          },
+
+          {
+
+            $sample: {
+
+              size:
+                assessment.totalMCQQuestions
+
+            }
+
+          }
+
+        ]);
+
+      // RANDOM CODING QUESTIONS
+
+      const codingQuestions =
+        await Question.aggregate([
+
+          {
+
+            $match: {
+
+              assessment:
+                assessment._id,
+
+              type: "coding",
+
+              isActive: true
+
+            }
+
+          },
+
+          {
+
+            $sample: {
+
+              size:
+                assessment.totalCodingQuestions
+
+            }
+
+          }
+
+        ]);
+
+      res.status(200).json({
+
+        success: true,
+
+        mcqQuestions,
+
+        codingQuestions
+
+      });
 
     } catch (error) {
-        console.log(error);
 
-        res.status(500).json({
-            success: false,
-            message: "Failed to fetch questions"
-        });
+      console.log(error);
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "Failed to fetch questions"
+
+      });
+
     }
-};
+
+  };
 
 // ======================================================
 // START ASSESSMENT
 // ======================================================
 
-const startAssessment = async (req, res) => {
-    try {
+const startAssessment = async (
 
-        const { assessmentId } = req.params;
+  req,
 
-        const attempt = await ExamAttempt.create({
-            student: req.user._id,
-            assessment: assessmentId,
-            status: "in-progress",
-            startedAt: new Date()
-        });
+  res
 
-        res.status(201).json({
-            success: true,
-            message: "Assessment started",
-            attempt
-        });
+) => {
 
-    } catch (error) {
-        console.log(error);
+  try {
 
-        res.status(500).json({
-            success: false,
-            message: "Failed to start assessment"
-        });
-    }
+    const { assessmentId } =
+      req.params;
+
+    const attempt =
+      await ExamAttempt.create({
+
+        student:
+          req.user._id,
+
+        assessment:
+          assessmentId,
+
+        status:
+          "in-progress",
+
+        startedAt:
+          new Date()
+
+      });
+
+    res.status(201).json({
+
+      success: true,
+
+      message:
+        "Assessment started",
+
+      attempt
+
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+
+      success: false,
+
+      message:
+        "Failed to start assessment"
+
+    });
+
+  }
+
 };
 
 // ======================================================
 // SUBMIT ASSESSMENT
 // ======================================================
 
-const submitAssessment = async (req, res) => {
-    try {
+const submitAssessment = async (
 
-        const { attemptId } = req.params;
+  req,
 
-        const { answers } = req.body;
+  res
 
-        const attempt = await ExamAttempt.findById(attemptId);
+) => {
 
-        if (!attempt) {
-            return res.status(404).json({
-                success: false,
-                message: "Attempt not found"
-            });
-        }
+  try {
 
-        let totalScore = 0;
-        let totalMarks = 0;
+    const { attemptId } =
+      req.params;
 
-        const evaluatedAnswers = [];
+    const { answers } =
+      req.body;
 
-        for (const answer of answers) {
+    const attempt =
+      await ExamAttempt.findById(
+        attemptId
+      );
 
-            const question = await Question.findById(answer.question);
+    if (!attempt) {
 
-            if (!question) continue;
+      return res.status(404).json({
 
-            totalMarks += question.marks;
+        success: false,
 
-            let isCorrect = false;
-            let marksObtained = 0;
+        message:
+          "Attempt not found"
 
-            // MCQ EVALUATION
-            if (question.type === "mcq") {
+      });
 
-                isCorrect =
-                    answer.selectedAnswer === question.correctAnswer;
+    }
 
-                if (isCorrect) {
-                    marksObtained = question.marks;
-                    totalScore += question.marks;
-                }
-            }
+    let totalScore = 0;
 
-            // Coding question placeholder
-            if (question.type === "coding") {
+    let totalMarks = 0;
 
-                // Future AI/compiler evaluation
+    const evaluatedAnswers = [];
 
-                marksObtained = 0;
-            }
+    for (const answer of answers) {
 
-            evaluatedAnswers.push({
-                question: question._id,
-                selectedAnswer: answer.selectedAnswer,
-                submittedCode: answer.submittedCode,
-                isCorrect,
-                marksObtained
-            });
-        }
-
-        const percentage =
-            totalMarks > 0
-                ? (totalScore / totalMarks) * 100
-                : 0;
-
-        const assessment = await Assessment.findById(
-            attempt.assessment
+      const question =
+        await Question.findById(
+          answer.question
         );
 
-        const passed =
-            percentage >= assessment.passingMarks;
+      if (!question) continue;
 
-        attempt.answers = evaluatedAnswers;
-        attempt.score = totalScore;
-        attempt.totalMarks = totalMarks;
-        attempt.percentage = percentage;
-        attempt.passed = passed;
-        attempt.status = "submitted";
-        attempt.submittedAt = new Date();
+      totalMarks +=
+        question.marks;
 
-        await attempt.save();
+      let isCorrect = false;
 
-        res.status(200).json({
-            success: true,
-            message: "Assessment submitted successfully",
-            result: {
-                score: totalScore,
-                totalMarks,
-                percentage,
-                passed
-            }
-        });
+      let marksObtained = 0;
 
-    } catch (error) {
-        console.log(error);
+      // MCQ EVALUATION
 
-        res.status(500).json({
-            success: false,
-            message: "Failed to submit assessment"
-        });
+      if (
+
+        question.type === "mcq"
+
+      ) {
+
+        isCorrect =
+
+          answer.selectedAnswer ===
+
+          question.correctAnswer;
+
+        if (isCorrect) {
+
+          marksObtained =
+            question.marks;
+
+          totalScore +=
+            question.marks;
+
+        }
+
+      }
+
+      // CODING PLACEHOLDER
+
+      if (
+
+        question.type === "coding"
+
+      ) {
+
+        marksObtained = 0;
+
+      }
+
+      evaluatedAnswers.push({
+
+        question:
+          question._id,
+
+        selectedAnswer:
+          answer.selectedAnswer,
+
+        submittedCode:
+          answer.submittedCode,
+
+        isCorrect,
+
+        marksObtained
+
+      });
+
     }
+
+    const percentage =
+
+      totalMarks > 0
+
+        ? (totalScore /
+            totalMarks) *
+          100
+
+        : 0;
+
+    const assessment =
+      await Assessment.findById(
+        attempt.assessment
+      );
+
+    const passed =
+
+      percentage >=
+
+      assessment.passingMarks;
+
+    attempt.answers =
+      evaluatedAnswers;
+
+    attempt.score =
+      totalScore;
+
+    attempt.totalMarks =
+      totalMarks;
+
+    attempt.percentage =
+      percentage;
+
+    attempt.passed =
+      passed;
+
+    attempt.status =
+      "submitted";
+
+    attempt.submittedAt =
+      new Date();
+
+    await attempt.save();
+
+    res.status(200).json({
+
+      success: true,
+
+      message:
+        "Assessment submitted successfully",
+
+      result: {
+
+        score:
+          totalScore,
+
+        totalMarks,
+
+        percentage,
+
+        passed
+
+      }
+
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+
+      success: false,
+
+      message:
+        "Failed to submit assessment"
+
+    });
+
+  }
+
 };
 
+// ======================================================
+// EXPORTS
+// ======================================================
+
 module.exports = {
-    createAssessment,
-    addQuestion,
-    getAssessmentQuestions,
-    startAssessment,
-    submitAssessment
+
+  getAssessments,
+
+  createAssessment,
+
+  addQuestion,
+
+  getAssessmentQuestions,
+
+  startAssessment,
+
+  submitAssessment
+
 };

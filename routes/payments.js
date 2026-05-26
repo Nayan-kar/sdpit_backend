@@ -2,7 +2,21 @@ const express = require('express');
 
 const router = express.Router();
 
-const protect = require('../middlewares/authMiddleware');
+// ======================================
+// AUTH MIDDLEWARE
+// ======================================
+
+const {
+
+  protect
+
+} = require(
+  '../middlewares/authMiddleware'
+);
+
+// ======================================
+// CONTROLLERS
+// ======================================
 
 const {
 
@@ -10,23 +24,40 @@ const {
 
   verifyPayment
 
-} = require('../controllers/paymentController');
+} = require(
+  '../controllers/paymentController'
+);
 
-
+// ======================================
 // CREATE ORDER
+// ======================================
+
 router.post(
+
   '/create-order',
+
   protect,
+
   createOrder
+
 );
 
-
+// ======================================
 // VERIFY PAYMENT
+// ======================================
+
 router.post(
+
   '/verify-payment',
+
   protect,
+
   verifyPayment
+
 );
 
+// ======================================
+// EXPORT
+// ======================================
 
 module.exports = router;

@@ -7,68 +7,125 @@ const router = express.Router();
 // ======================================
 
 const {
-    createAssessment,
-    addQuestion,
-    getAssessmentQuestions,
-    startAssessment,
-    submitAssessment
-} = require("../controllers/assessmentController");
+
+  getAssessments,
+
+  createAssessment,
+
+  addQuestion,
+
+  getAssessmentQuestions,
+
+  startAssessment,
+
+  submitAssessment
+
+} = require(
+  "../controllers/assessmentController"
+);
 
 // ======================================
-// MIDDLEWARES
+// AUTH MIDDLEWARE
 // ======================================
 
-const protect =
-    require("../middlewares/authMiddleware");
+const {
 
-const adminMiddleware =
-    require("../middlewares/adminMiddleware");
+  protect,
 
+  authorizeRoles
+
+} = require(
+  "../middlewares/authMiddleware"
+);
+
+// ======================================
+// GET ALL ASSESSMENTS
+// ======================================
+
+router.get(
+
+  "/",
+
+  protect,
+
+  getAssessments
+
+);
 
 // ======================================
 // ADMIN ROUTES
 // ======================================
 
 // CREATE ASSESSMENT
+
 router.post(
-    "/create",
-    protect,
-    adminMiddleware,
-    createAssessment
+
+  "/create",
+
+  protect,
+
+  authorizeRoles("admin"),
+
+  createAssessment
+
 );
 
 // ADD QUESTION
-router.post(
-    "/add-question",
-    protect,
-    adminMiddleware,
-    addQuestion
-);
 
+router.post(
+
+  "/add-question",
+
+  protect,
+
+  authorizeRoles("admin"),
+
+  addQuestion
+
+);
 
 // ======================================
 // STUDENT ROUTES
 // ======================================
 
 // GET RANDOMIZED QUESTIONS
+
 router.get(
-    "/:assessmentId/questions",
-    protect,
-    getAssessmentQuestions
+
+  "/:assessmentId/questions",
+
+  protect,
+
+  getAssessmentQuestions
+
 );
 
 // START ASSESSMENT
+
 router.post(
-    "/start/:assessmentId",
-    protect,
-    startAssessment
+
+  "/start/:assessmentId",
+
+  protect,
+
+  startAssessment
+
 );
 
 // SUBMIT ASSESSMENT
+
 router.post(
-    "/submit/:attemptId",
-    protect,
-    submitAssessment
+
+  "/submit/:attemptId",
+
+  protect,
+
+  submitAssessment
+
 );
+
+// ======================================
+// EXPORT
+// ======================================
 
 module.exports = router;

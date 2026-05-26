@@ -1,25 +1,111 @@
 const express = require("express");
+
 const router = express.Router();
 
+// ======================================
+// CONTROLLERS
+// ======================================
+
 const {
+
   getStudentProfile,
+
   getMyCourses,
+
   getCourseProgress,
+
   getAssessmentStatus,
+
   getCertificates,
-} = require("../controllers/studentController");
 
-const authMiddleware = require("../middlewares/authMiddleware");
+} = require(
+  "../controllers/studentController"
+);
 
-// Protected Routes
-router.get("/profile", authMiddleware, getStudentProfile);
+// ======================================
+// AUTH MIDDLEWARE
+// ======================================
 
-router.get("/my-courses", authMiddleware, getMyCourses);
+const {
 
-router.get("/course-progress", authMiddleware, getCourseProgress);
+  protect
 
-router.get("/assessment-status", authMiddleware, getAssessmentStatus);
+} = require(
+  "../middlewares/authMiddleware"
+);
 
-router.get("/certificates", authMiddleware, getCertificates);
+// ======================================
+// STUDENT PROFILE
+// ======================================
+
+router.get(
+
+  "/profile",
+
+  protect,
+
+  getStudentProfile
+
+);
+
+// ======================================
+// MY COURSES
+// ======================================
+
+router.get(
+
+  "/my-courses",
+
+  protect,
+
+  getMyCourses
+
+);
+
+// ======================================
+// COURSE PROGRESS
+// ======================================
+
+router.get(
+
+  "/course-progress",
+
+  protect,
+
+  getCourseProgress
+
+);
+
+// ======================================
+// ASSESSMENT STATUS
+// ======================================
+
+router.get(
+
+  "/assessment-status",
+
+  protect,
+
+  getAssessmentStatus
+
+);
+
+// ======================================
+// CERTIFICATES
+// ======================================
+
+router.get(
+
+  "/certificates",
+
+  protect,
+
+  getCertificates
+
+);
+
+// ======================================
+// EXPORT
+// ======================================
 
 module.exports = router;

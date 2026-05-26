@@ -1,5 +1,7 @@
 const express = require("express");
+
 const cors = require("cors");
+
 const dotenv = require("dotenv");
 
 dotenv.config();
@@ -43,24 +45,35 @@ app.use(
 // ROUTES IMPORTS
 // ======================================
 
+// AUTH ROUTES
+
 const authRoutes =
   require("./routes/auth");
+
+// COURSE ROUTES
 
 const courseRoutes =
   require("./routes/courses");
 
+// VIDEO ROUTES
+
 const videoRoutes =
   require("./routes/videos");
+
+// STUDENT ROUTES
 
 const studentRoutes =
   require("./routes/studentRoutes");
 
+// ENROLLMENT ROUTES
+
 const enrollmentRoutes =
   require("./routes/enrollments");
 
+// PAYMENT ROUTES
+
 const paymentRoutes =
   require("./routes/payments");
-
 
 // ======================================
 // PHASE 5 ROUTES
@@ -69,35 +82,75 @@ const paymentRoutes =
 const progressRoutes =
   require("./routes/progressRoutes");
 
-
 // ======================================
 // PHASE 6 ROUTES
 // ======================================
 
+// ADMIN ASSESSMENT ROUTES
+
 const assessmentRoutes =
   require("./routes/assessments");
+
+// STUDENT ASSESSMENT ROUTES
+
+const studentAssessmentRoutes =
+  require(
+    "./routes/studentAssessmentRoutes"
+  );
 
 
 // ======================================
 // ENABLED ROUTES
 // ======================================
 
-app.use("/api/auth", authRoutes);
+// AUTH
 
-app.use("/api/courses", courseRoutes);
+app.use(
+  "/api/auth",
+  authRoutes
+);
 
-app.use("/api/videos", videoRoutes);
+// COURSES
 
-app.use("/api/students", studentRoutes);
+app.use(
+  "/api/courses",
+  courseRoutes
+);
 
-app.use("/api/enrollments", enrollmentRoutes);
+// VIDEOS
 
-app.use("/api/payments", paymentRoutes);
+app.use(
+  "/api/videos",
+  videoRoutes
+);
+
+// STUDENTS
+
+app.use(
+  "/api/students",
+  studentRoutes
+);
+
+// ENROLLMENTS
+
+app.use(
+  "/api/enrollments",
+  enrollmentRoutes
+);
+
+// PAYMENTS
+
+app.use(
+  "/api/payments",
+  paymentRoutes
+);
 
 
 // ======================================
 // PHASE 5 ROUTES ENABLE
 // ======================================
+
+// PROGRESS ENGINE
 
 app.use(
   "/api/progress",
@@ -109,9 +162,18 @@ app.use(
 // PHASE 6 ROUTES ENABLE
 // ======================================
 
+// ADMIN ASSESSMENTS
+
 app.use(
   "/api/assessments",
   assessmentRoutes
+);
+
+// STUDENT ASSESSMENT ENGINE
+
+app.use(
+  "/api/student-assessments",
+  studentAssessmentRoutes
 );
 
 
@@ -120,20 +182,30 @@ app.use(
 // ======================================
 
 app.get("/db-test", async (req, res) => {
+
   try {
 
     res.json({
+
       success: true,
-      message: "MongoDB Connected ✅",
+
+      message:
+        "MongoDB Connected ✅",
+
     });
 
   } catch (err) {
 
     res.status(500).json({
+
       success: false,
+
       error: err.message,
+
     });
+
   }
+
 });
 
 
@@ -142,7 +214,9 @@ app.get("/db-test", async (req, res) => {
 // ======================================
 
 app.get("/", (req, res) => {
+
   res.send("Backend Running 🚀");
+
 });
 
 
@@ -155,10 +229,14 @@ app.use((err, req, res, next) => {
   console.log(err);
 
   res.status(500).json({
+
     success: false,
+
     message:
       err.message || "Server Error",
+
   });
+
 });
 
 
@@ -169,7 +247,9 @@ app.use((err, req, res, next) => {
 app.listen(port, () => {
 
   console.log(
+
     `Server is running on port ${port}`
+
   );
 
 });
