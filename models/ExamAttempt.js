@@ -14,6 +14,10 @@ const examAttemptSchema = new mongoose.Schema(
         required: true
     },
 
+    // =========================
+    // ANSWERS
+    // =========================
+
     answers: [
         {
             question: {
@@ -21,15 +25,31 @@ const examAttemptSchema = new mongoose.Schema(
                 ref: "Question"
             },
 
+            // MCQ answer
             selectedAnswer: {
                 type: String
             },
 
+            // Coding answer
+            submittedCode: {
+                type: String
+            },
+
             isCorrect: {
-                type: Boolean
+                type: Boolean,
+                default: false
+            },
+
+            marksObtained: {
+                type: Number,
+                default: 0
             }
         }
     ],
+
+    // =========================
+    // RESULT DATA
+    // =========================
 
     score: {
         type: Number,
@@ -51,9 +71,51 @@ const examAttemptSchema = new mongoose.Schema(
         default: false
     },
 
-    submittedAt: {
+    // =========================
+    // SECURITY + TRACKING
+    // =========================
+
+    tabSwitchCount: {
+        type: Number,
+        default: 0
+    },
+
+    warningCount: {
+        type: Number,
+        default: 0
+    },
+
+    autoSubmitted: {
+        type: Boolean,
+        default: false
+    },
+
+    // =========================
+    // TIMER
+    // =========================
+
+    startedAt: {
         type: Date,
         default: Date.now
+    },
+
+    submittedAt: {
+        type: Date
+    },
+
+    timeTaken: {
+        type: Number, // in seconds
+        default: 0
+    },
+
+    // =========================
+    // ATTEMPT STATUS
+    // =========================
+
+    status: {
+        type: String,
+        enum: ["in-progress", "submitted", "evaluated"],
+        default: "in-progress"
     }
 },
 {

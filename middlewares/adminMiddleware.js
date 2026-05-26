@@ -1,47 +1,75 @@
-const adminMiddleware = (req, res, next) => {
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
+
+// ======================================
+// AUTH PROTECT MIDDLEWARE
+// ======================================
+
+const protect = async (req, res, next) => {
 
   try {
 
-    // CHECK USER
-    if (!req.user) {
+    const authHeader =
+      req.headers.authorization;
+
+    // CHECK TOKEN
+    if (
+      !authHeader ||
+      !authHeader.startsWith("Bearer ")
+    ) {
 
       return res.status(401).json({
-
         success: false,
-
-        message: 'User not authenticated'
-
+        message:
+          "Access denied. No token provided.",
       });
 
     }
 
-    // CHECK ROLE
-    if (req.user.role !== 'admin') {
+    // EXTRACT TOKEN
+    const token =
+      authHeader.split(" ")[1];
 
-      return res.status(403).json({
+    // VERIFY TOKEN
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
 
+    // GET USER
+    const user = await User.findById(
+      decoded.id
+    ).select("-password");
+
+    if (!user) {
+
+      return res.status(401).json({
         success: false,
-
-        message: 'Access denied. Admin only.'
-
+        message: "User not found",
       });
 
     }
+
+    // ATTACH USER
+    req.user = user;
 
     next();
 
   } catch (error) {
 
-    return res.status(500).json({
+    console.log(error);
 
+    return res.status(401).json({
       success: false,
-
-      message: error.message
-
+      message: "Invalid token",
     });
 
   }
 
 };
 
-module.exports = adminMiddleware;
+// ======================================
+// EXPORT
+// ======================================
+
+module.exports = protect;

@@ -1,60 +1,75 @@
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
-const User = require('../models/User');
-
+// ======================================
+// AUTH PROTECT MIDDLEWARE
+// ======================================
 
 const protect = async (req, res, next) => {
 
-  let token;
-
   try {
 
-    // CHECK AUTH HEADER
+    const authHeader =
+      req.headers.authorization;
+
+    // CHECK TOKEN
     if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith('Bearer')
+      !authHeader ||
+      !authHeader.startsWith("Bearer ")
     ) {
 
-      // EXTRACT TOKEN
-      token = req.headers.authorization.split(' ')[1];
-
-      // VERIFY TOKEN
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET
-      );
-
-      // GET USER DATA
-      req.user = await User.findById(decoded.id)
-        .select('-password');
-
-      next();
-
-    } else {
-
       return res.status(401).json({
-
         success: false,
-
-        message: 'Not authorized, no token'
-
+        message:
+          "Access denied. No token provided.",
       });
 
     }
 
+    // EXTRACT TOKEN
+    const token =
+      authHeader.split(" ")[1];
+
+    // VERIFY TOKEN
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+
+    // GET USER
+    const user = await User.findById(
+      decoded.id
+    ).select("-password");
+
+    if (!user) {
+
+      return res.status(401).json({
+        success: false,
+        message: "User not found",
+      });
+
+    }
+
+    // ATTACH USER
+    req.user = user;
+
+    next();
+
   } catch (error) {
 
+    console.log(error);
+
     return res.status(401).json({
-
       success: false,
-
-      message: 'Token failed'
-
+      message: "Invalid token",
     });
 
   }
 
 };
 
+// ======================================
+// EXPORT
+// ======================================
 
 module.exports = protect;

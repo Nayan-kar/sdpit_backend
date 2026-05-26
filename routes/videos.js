@@ -1,42 +1,56 @@
-const express = require('express');
+const express = require("express");
 
 const router = express.Router();
 
-const videoController = require('../controllers/videoController');
+const {
+  getVideosByCourseId,
+  createVideo,
+  updateVideo,
+  deleteVideo,
+  reorderVideos,
+} = require("../controllers/videoController");
 
-const protect = require('../middlewares/authMiddleware');
+const protect = require("../middlewares/authMiddleware");
 
+const adminMiddleware = require("../middlewares/adminMiddleware");
 
 // GET VIDEOS BY COURSE ID
 router.get(
-  '/:courseId',
+  "/:courseId",
   protect,
-  videoController.getVideosByCourseId
+  getVideosByCourseId
 );
-
 
 // CREATE VIDEO
 router.post(
-  '/',
+  "/",
   protect,
-  videoController.createVideo
+  adminMiddleware,
+  createVideo
 );
 
+// REORDER VIDEOS
+router.put(
+  "/reorder",
+  protect,
+  adminMiddleware,
+  reorderVideos
+);
 
 // UPDATE VIDEO
 router.put(
-  '/:id',
+  "/:id",
   protect,
-  videoController.updateVideo
+  adminMiddleware,
+  updateVideo
 );
-
 
 // DELETE VIDEO
 router.delete(
-  '/:id',
+  "/:id",
   protect,
-  videoController.deleteVideo
+  adminMiddleware,
+  deleteVideo
 );
-
 
 module.exports = router;

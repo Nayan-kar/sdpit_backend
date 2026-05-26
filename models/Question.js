@@ -8,24 +8,27 @@ const questionSchema = new mongoose.Schema(
         required: true
     },
 
-    question: {
-        type: String,
+    course: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Course",
         required: true
     },
 
-    options: [{
-        type: String
-    }],
-
-    correctAnswer: {
-        type: String,
-        required: true
-    },
-
+    // Question Type
     type: {
         type: String,
         enum: ["mcq", "coding"],
         default: "mcq"
+    },
+
+    // =========================
+    // COMMON FIELDS
+    // =========================
+
+    question: {
+        type: String,
+        required: true,
+        trim: true
     },
 
     marks: {
@@ -40,7 +43,68 @@ const questionSchema = new mongoose.Schema(
     },
 
     explanation: {
+        type: String,
+        trim: true
+    },
+
+    // =========================
+    // MCQ FIELDS
+    // =========================
+
+    options: [{
+        type: String,
+        trim: true
+    }],
+
+    correctAnswer: {
+        type: String,
+        trim: true
+    },
+
+    // =========================
+    // CODING QUESTION FIELDS
+    // =========================
+
+    starterCode: {
         type: String
+    },
+
+    inputFormat: {
+        type: String
+    },
+
+    outputFormat: {
+        type: String
+    },
+
+    constraints: {
+        type: String
+    },
+
+    sampleInput: {
+        type: String
+    },
+
+    sampleOutput: {
+        type: String
+    },
+
+    expectedSolution: {
+        type: String
+    },
+
+    // =========================
+    // MANAGEMENT
+    // =========================
+
+    isActive: {
+        type: Boolean,
+        default: true
+    },
+
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
     }
 },
 {

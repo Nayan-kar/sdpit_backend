@@ -1,59 +1,65 @@
-const express = require('express');
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
-const router = express.Router();
+// ======================================
+// PROTECT MIDDLEWARE
+// ======================================
 
-const protect = require('../middlewares/authMiddleware');
+const protect = async (req, res, next) => {
+  try {
 
-const adminMiddleware = require('../middlewares/adminMiddleware');
+    const authHeader = req.headers.authorization;
 
-const upload = require('../middlewares/upload');
+    // CHECK TOKEN
+    if (
+      !authHeader ||
+      !authHeader.startsWith("Bearer ")
+    ) {
+      return res.status(401).json({
+        success: false,
+        message: "Access denied. No token provided.",
+      });
+    }
 
-const {
+    // EXTRACT TOKEN
+    const token = authHeader.split(" ")[1];
 
-  getCourses,
-  getCourseById,
-  createCourse,
-  updateCourse,
-  deleteCourse
+    // VERIFY TOKEN
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
 
-} = require('../controllers/courseController');
+    // GET USER
+    const user = await User.findById(
+      decoded.id
+    ).select("-password");
 
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "User not found",
+      });
+    }
 
-// GET ALL COURSES
-router.get('/', getCourses);
+    // ATTACH USER
+    req.user = user;
 
+    next();
 
-// GET SINGLE COURSE
-router.get('/:id', getCourseById);
+  } catch (error) {
 
+    console.log(error);
 
-// CREATE COURSE
-router.post(
-  '/',
-  protect,
-  adminMiddleware,
-  upload.single('thumbnail'),
-  createCourse
-);
+    return res.status(401).json({
+      success: false,
+      message: "Invalid token",
+    });
+  }
+};
 
+// ======================================
+// EXPORT
+// ======================================
 
-// UPDATE COURSE
-router.put(
-  '/:id',
-  protect,
-  adminMiddleware,
-  upload.single('thumbnail'),
-  updateCourse
-);
-
-
-// DELETE COURSE
-router.delete(
-  '/:id',
-  protect,
-  adminMiddleware,
-  deleteCourse
-);
-
-
-module.exports = router;
+module.exports = protect;

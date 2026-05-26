@@ -42,6 +42,19 @@ const userSchema = new mongoose.Schema(
         default: "student"
     },
 
+    active: {
+        type: Boolean,
+        default: true
+    },
+
+    // ENROLLED COURSES
+    enrolledCourses: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Course"
+        }
+    ],
+
     // OTP VERIFICATION
     isVerified: {
         type: Boolean,
