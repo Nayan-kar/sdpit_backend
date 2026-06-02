@@ -1,16 +1,23 @@
-const Assessment = require('../models/Assessment');
+const Assessment =
+  require('../models/Assessment');
 
-const Question = require('../models/Question');
+const Question =
+  require('../models/Question');
 
-const AssessmentAttempt = require('../models/AssessmentAttempt');
+const AssessmentAttempt =
+  require('../models/AssessmentAttempt');
 
 // ========================================
-// SHUFFLE ARRAY UTILITY
+// SHUFFLE UTILITY
 // ========================================
 
 const shuffleArray = (array) => {
 
-  return array.sort(() => Math.random() - 0.5);
+  return array.sort(
+
+    () => Math.random() - 0.5
+
+  );
 
 };
 
@@ -28,9 +35,11 @@ exports.startAssessment = async (
 
   try {
 
-    const { assessmentId } = req.params;
+    const { assessmentId } =
+      req.params;
 
-    const studentId = req.user.id;
+    const studentId =
+      req.user.id;
 
     const assessment =
       await Assessment.findById(
@@ -49,6 +58,8 @@ exports.startAssessment = async (
       });
 
     }
+
+    // CHECK EXISTING ATTEMPT
 
     const existingAttempt =
       await AssessmentAttempt.findOne({
@@ -86,12 +97,14 @@ exports.startAssessment = async (
 
     }
 
+    // FETCH QUESTIONS
+
     let mcqQuestions =
       await Question.find({
 
         assessment: assessmentId,
 
-        type: 'MCQ'
+        type: 'mcq'
 
       });
 
@@ -100,9 +113,11 @@ exports.startAssessment = async (
 
         assessment: assessmentId,
 
-        type: 'Coding'
+        type: 'coding'
 
       });
+
+    // SHUFFLE QUESTIONS
 
     mcqQuestions =
       shuffleArray(mcqQuestions);
@@ -110,12 +125,15 @@ exports.startAssessment = async (
     codingQuestions =
       shuffleArray(codingQuestions);
 
+    // SELECT QUESTIONS
+
     const selectedMCQs =
       mcqQuestions.slice(
 
         0,
 
-        assessment.randomMCQs || 15
+        assessment.totalMCQQuestions ||
+          15
 
       );
 
@@ -124,9 +142,12 @@ exports.startAssessment = async (
 
         0,
 
-        assessment.randomCodingQuestions || 5
+        assessment.totalCodingQuestions ||
+          5
 
       );
+
+    // SHUFFLE OPTIONS
 
     const shuffledMCQs =
       selectedMCQs.map((question) => {
@@ -150,6 +171,8 @@ exports.startAssessment = async (
 
       });
 
+    // FINAL QUESTIONS
+
     let finalQuestions = [
 
       ...shuffledMCQs,
@@ -168,6 +191,8 @@ exports.startAssessment = async (
         shuffleArray(finalQuestions);
 
     }
+
+    // CREATE ATTEMPT
 
     const attempt =
       await AssessmentAttempt.create({
@@ -201,34 +226,23 @@ exports.startAssessment = async (
           60,
 
         passingPercentage:
-          assessment.passingPercentage ||
-          70,
+          assessment.passingMarks || 70,
 
         status: 'IN_PROGRESS',
 
         startedAt: new Date(),
 
-        ipAddress:
+        tabSwitchCount: 0,
 
-          req.ip ||
+        fullscreenExitCount: 0,
 
-          req.connection.remoteAddress ||
+        cheatScore: 0,
 
-          '',
-
-        browserInfo:
-
-          req.headers['user-agent'] ||
-
-          '',
-
-        deviceInfo:
-
-          req.headers['sec-ch-ua-platform'] ||
-
-          ''
+        suspiciousActivity: false
 
       });
+
+    // RESPONSE
 
     res.status(200).json({
 
@@ -250,7 +264,7 @@ exports.startAssessment = async (
           assessment.duration,
 
         passingPercentage:
-          assessment.passingPercentage
+          assessment.passingMarks
 
       },
 
@@ -261,7 +275,8 @@ exports.startAssessment = async (
       totalQuestions:
         finalQuestions.length,
 
-      startedAt: attempt.startedAt,
+      startedAt:
+        attempt.startedAt,
 
       remainingTime:
         attempt.remainingTime
@@ -270,13 +285,7 @@ exports.startAssessment = async (
 
   } catch (error) {
 
-    console.error(
-
-      'Start Assessment Error:',
-
-      error
-
-    );
+    console.error(error);
 
     res.status(500).json({
 
@@ -294,7 +303,7 @@ exports.startAssessment = async (
 };
 
 // ========================================
-// GET ASSESSMENT QUESTIONS
+// GET QUESTIONS
 // ========================================
 
 exports.getAssessmentQuestions =
@@ -334,7 +343,7 @@ exports.getAssessmentQuestions =
           success: false,
 
           message:
-            'Active assessment attempt not found'
+            'Active attempt not found'
 
         });
 
@@ -364,45 +373,32 @@ exports.getAssessmentQuestions =
 
         success: true,
 
-        attemptId: attempt._id,
-
-        assessmentId,
+        attemptId:
+          attempt._id,
 
         questions,
 
-        answers: formattedAnswers,
+        answers:
+          formattedAnswers,
 
         remainingTime:
           attempt.remainingTime,
 
         startedAt:
-          attempt.startedAt,
-
-        totalQuestions:
-          attempt.totalQuestions,
-
-        status: attempt.status
+          attempt.startedAt
 
       });
 
     } catch (error) {
 
-      console.error(
-
-        'Get Questions Error:',
-
-        error
-
-      );
+      console.error(error);
 
       res.status(500).json({
 
         success: false,
 
         message:
-          'Failed to fetch questions',
-
-        error: error.message
+          'Failed to fetch questions'
 
       });
 
@@ -455,7 +451,7 @@ exports.saveAnswer = async (
         success: false,
 
         message:
-          'Active attempt not found'
+          'Attempt not found'
 
       });
 
@@ -502,37 +498,134 @@ exports.saveAnswer = async (
       success: true,
 
       message:
-        'Answer saved successfully',
-
-      attemptedQuestions:
-        attempt.attemptedQuestions
+        'Answer saved successfully'
 
     });
 
   } catch (error) {
 
-    console.error(
-
-      'Save Answer Error:',
-
-      error
-
-    );
+    console.error(error);
 
     res.status(500).json({
 
       success: false,
 
       message:
-        'Failed to save answer',
+        'Failed to save answer'
 
-      error: error.message
-
-    });
+      });
 
   }
 
 };
+
+// ========================================
+// AUTO SAVE
+// ========================================
+
+exports.autoSaveAnswers =
+  async (req, res) => {
+
+    try {
+
+      const {
+
+        assessmentId,
+
+        answers
+
+      } = req.body;
+
+      const studentId =
+        req.user.id;
+
+      const attempt =
+        await AssessmentAttempt.findOne({
+
+          student: studentId,
+
+          assessment: assessmentId,
+
+          status: 'IN_PROGRESS'
+
+        });
+
+      if (!attempt) {
+
+        return res.status(404).json({
+
+          success: false,
+
+          message:
+            'Attempt not found'
+
+        });
+
+      }
+
+      for (const questionId in answers) {
+
+        const existingAnswer =
+          attempt.answers.find(
+
+            (item) =>
+
+              item.question.toString() ===
+
+              questionId
+
+          );
+
+        if (existingAnswer) {
+
+          existingAnswer.answer =
+            answers[questionId];
+
+        } else {
+
+          attempt.answers.push({
+
+            question: questionId,
+
+            answer:
+              answers[questionId]
+
+          });
+
+        }
+
+      }
+
+      attempt.autoSavedAt =
+        new Date();
+
+      await attempt.save();
+
+      res.status(200).json({
+
+        success: true,
+
+        message:
+          'Answers auto saved'
+
+      });
+
+    } catch (error) {
+
+      console.error(error);
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          'Auto save failed'
+
+      });
+
+    }
+
+  };
 
 // ========================================
 // SUBMIT ASSESSMENT
@@ -550,9 +643,7 @@ exports.submitAssessment = async (
 
     const {
 
-      assessmentId,
-
-      answers
+      assessmentId
 
     } = req.body;
 
@@ -577,7 +668,7 @@ exports.submitAssessment = async (
         success: false,
 
         message:
-          'Assessment attempt not found'
+          'Attempt not found'
 
       });
 
@@ -591,20 +682,18 @@ exports.submitAssessment = async (
 
     let totalMarks = 0;
 
-    // ========================================
-    // EVALUATE ANSWERS
-    // ========================================
+    // EVALUATE
 
     for (const item of attempt.answers) {
 
       const question =
         item.question;
 
-      // MCQ EVALUATION
+      // MCQ
 
       if (
 
-        question.type === 'MCQ'
+        question.type === 'mcq'
 
       ) {
 
@@ -641,12 +730,11 @@ exports.submitAssessment = async (
 
       }
 
-      // CODING QUESTIONS
-      // FUTURE AI EVALUATION PLACEHOLDER
+      // CODING
 
       if (
 
-        question.type === 'Coding'
+        question.type === 'coding'
 
       ) {
 
@@ -657,9 +745,7 @@ exports.submitAssessment = async (
 
     }
 
-    // ========================================
-    // CALCULATE PERCENTAGE
-    // ========================================
+    // PERCENTAGE
 
     const percentage =
 
@@ -673,19 +759,13 @@ exports.submitAssessment = async (
 
         : 0;
 
-    // ========================================
-    // PASS / FAIL
-    // ========================================
-
     const passed =
 
       percentage >=
 
       attempt.passingPercentage;
 
-    // ========================================
     // UPDATE ATTEMPT
-    // ========================================
 
     attempt.correctAnswers =
       correctAnswers;
@@ -726,18 +806,12 @@ exports.submitAssessment = async (
 
       );
 
-    // ========================================
-    // CERTIFICATE ELIGIBILITY
-    // ========================================
-
     attempt.certificateEligible =
       passed;
 
     await attempt.save();
 
-    // ========================================
     // RESPONSE
-    // ========================================
 
     res.status(200).json({
 
@@ -746,7 +820,8 @@ exports.submitAssessment = async (
       message:
         'Assessment Submitted Successfully',
 
-      resultId: attempt._id,
+      resultId:
+        attempt._id,
 
       result: {
 
@@ -768,22 +843,14 @@ exports.submitAssessment = async (
 
   } catch (error) {
 
-    console.error(
-
-      'Submit Assessment Error:',
-
-      error
-
-    );
+    console.error(error);
 
     res.status(500).json({
 
       success: false,
 
       message:
-        'Failed to submit assessment',
-
-      error: error.message
+        'Failed to submit assessment'
 
     });
 
@@ -805,19 +872,11 @@ exports.getResult = async (
 
   try {
 
-    // ========================================
-    // GET DATA
-    // ========================================
-
     const { resultId } =
       req.params;
 
     const studentId =
       req.user.id;
-
-    // ========================================
-    // FIND RESULT
-    // ========================================
 
     const attempt =
       await AssessmentAttempt.findOne({
@@ -838,10 +897,6 @@ exports.getResult = async (
           'name email'
         );
 
-    // ========================================
-    // VALIDATE
-    // ========================================
-
     if (!attempt) {
 
       return res.status(404).json({
@@ -855,33 +910,12 @@ exports.getResult = async (
 
     }
 
-    // ========================================
-    // FORMAT TIME
-    // ========================================
-
-    const totalSeconds =
-      attempt.totalTimeTaken || 0;
-
-    const minutes =
-      Math.floor(
-        totalSeconds / 60
-      );
-
-    const seconds =
-      totalSeconds % 60;
-
-    const formattedTime =
-      `${minutes}m ${seconds}s`;
-
-    // ========================================
-    // RESPONSE
-    // ========================================
-
     res.status(200).json({
 
       success: true,
 
-      resultId: attempt._id,
+      resultId:
+        attempt._id,
 
       assessmentTitle:
 
@@ -904,13 +938,6 @@ exports.getResult = async (
       totalMarks:
         attempt.totalMarks || 0,
 
-      totalQuestions:
-        attempt.totalQuestions || 0,
-
-      attemptedQuestions:
-        attempt.attemptedQuestions ||
-        0,
-
       correctAnswers:
         attempt.correctAnswers || 0,
 
@@ -918,55 +945,29 @@ exports.getResult = async (
         attempt.incorrectAnswers ||
         0,
 
-      passingPercentage:
-        attempt.passingPercentage ||
-        70,
-
-      timeTaken:
-        formattedTime,
-
       status:
+
         attempt.passed
+
           ? 'Passed'
+
           : 'Failed',
 
-      certificateEligible:
-        attempt.certificateEligible,
-
       submittedAt:
-        attempt.submittedAt,
-
-      cheatScore:
-        attempt.cheatScore || 0,
-
-      tabSwitchCount:
-        attempt.tabSwitchCount ||
-        0,
-
-      fullscreenExitCount:
-        attempt.fullscreenExitCount ||
-        0
+        attempt.submittedAt
 
     });
 
   } catch (error) {
 
-    console.error(
-
-      'Get Result Error:',
-
-      error
-
-    );
+    console.error(error);
 
     res.status(500).json({
 
       success: false,
 
       message:
-        'Failed to fetch result',
-
-      error: error.message
+        'Failed to fetch result'
 
     });
 
@@ -975,7 +976,7 @@ exports.getResult = async (
 };
 
 // ========================================
-// FLAG TAB SWITCH
+// TAB SWITCH
 // ========================================
 
 exports.flagTabSwitch = async (
@@ -1012,47 +1013,15 @@ exports.flagTabSwitch = async (
         success: false,
 
         message:
-          'Active attempt not found'
+          'Attempt not found'
 
       });
 
     }
 
-    // ========================================
-    // UPDATE COUNTS
-    // ========================================
-
     attempt.tabSwitchCount += 1;
 
     attempt.cheatScore += 5;
-
-    // ========================================
-    // SUSPICIOUS ACTIVITY
-    // ========================================
-
-    if (
-
-      attempt.tabSwitchCount >= 3
-
-    ) {
-
-      attempt.suspiciousActivity =
-        true;
-
-    }
-
-    // ========================================
-    // STORE CHEAT LOG
-    // ========================================
-
-    attempt.cheatLogs.push({
-
-      type: 'TAB_SWITCH',
-
-      details:
-        'Student switched browser tab during assessment.'
-
-    });
 
     await attempt.save();
 
@@ -1060,35 +1029,21 @@ exports.flagTabSwitch = async (
 
       success: true,
 
-      message:
-        'Tab switch logged',
-
       tabSwitchCount:
-        attempt.tabSwitchCount,
-
-      cheatScore:
-        attempt.cheatScore
+        attempt.tabSwitchCount
 
     });
 
   } catch (error) {
 
-    console.error(
-
-      'Tab Switch Error:',
-
-      error
-
-    );
+    console.error(error);
 
     res.status(500).json({
 
       success: false,
 
       message:
-        'Failed to log tab switch',
-
-      error: error.message
+        'Tab switch log failed'
 
     });
 
@@ -1097,7 +1052,7 @@ exports.flagTabSwitch = async (
 };
 
 // ========================================
-// FLAG FULLSCREEN EXIT
+// FULLSCREEN EXIT
 // ========================================
 
 exports.flagFullscreenExit =
@@ -1129,47 +1084,15 @@ exports.flagFullscreenExit =
           success: false,
 
           message:
-            'Active attempt not found'
+            'Attempt not found'
 
         });
 
       }
 
-      // ========================================
-      // UPDATE COUNTS
-      // ========================================
-
       attempt.fullscreenExitCount += 1;
 
       attempt.cheatScore += 5;
-
-      // ========================================
-      // SUSPICIOUS ACTIVITY
-      // ========================================
-
-      if (
-
-        attempt.fullscreenExitCount >= 3
-
-      ) {
-
-        attempt.suspiciousActivity =
-          true;
-
-      }
-
-      // ========================================
-      // STORE CHEAT LOG
-      // ========================================
-
-      attempt.cheatLogs.push({
-
-        type: 'FULLSCREEN_EXIT',
-
-        details:
-          'Student exited fullscreen during assessment.'
-
-      });
 
       await attempt.save();
 
@@ -1177,35 +1100,21 @@ exports.flagFullscreenExit =
 
         success: true,
 
-        message:
-          'Fullscreen exit logged',
-
         fullscreenExitCount:
-          attempt.fullscreenExitCount,
-
-        cheatScore:
-          attempt.cheatScore
+          attempt.fullscreenExitCount
 
       });
 
     } catch (error) {
 
-      console.error(
-
-        'Fullscreen Exit Error:',
-
-        error
-
-      );
+      console.error(error);
 
       res.status(500).json({
 
         success: false,
 
         message:
-          'Failed to log fullscreen exit',
-
-        error: error.message
+          'Fullscreen log failed'
 
       });
 

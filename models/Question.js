@@ -1,115 +1,269 @@
-const mongoose = require("mongoose");
+const mongoose =
+  require("mongoose");
 
-const questionSchema = new mongoose.Schema(
-{
-    assessment: {
-        type: mongoose.Schema.Types.ObjectId,
+const questionSchema =
+  new mongoose.Schema(
+
+    {
+
+      // ======================================
+      // ASSESSMENT
+      // ======================================
+
+      assessment: {
+
+        type:
+          mongoose.Schema.Types.ObjectId,
+
         ref: "Assessment",
-        required: true
-    },
 
-    course: {
-        type: mongoose.Schema.Types.ObjectId,
+        required: true
+
+      },
+
+      // ======================================
+      // OPTIONAL COURSE
+      // ======================================
+
+      course: {
+
+        type:
+          mongoose.Schema.Types.ObjectId,
+
         ref: "Course",
-        required: true
-    },
 
-    // Question Type
-    type: {
+        required: false
+
+      },
+
+      // ======================================
+      // QUESTION TYPE
+      // ======================================
+
+      type: {
+
         type: String,
-        enum: ["mcq", "coding"],
+
+        enum: [
+
+          "mcq",
+
+          "coding"
+
+        ],
+
         default: "mcq"
-    },
 
-    // =========================
-    // COMMON FIELDS
-    // =========================
+      },
 
-    question: {
+      // ======================================
+      // COMMON FIELDS
+      // ======================================
+
+      question: {
+
         type: String,
-        required: true,
-        trim: true
-    },
 
-    marks: {
+        trim: true
+
+      },
+
+      title: {
+
+        type: String,
+
+        trim: true
+
+      },
+
+      marks: {
+
         type: Number,
+
         default: 1
-    },
 
-    difficulty: {
-        type: String,
-        enum: ["easy", "medium", "hard"],
-        default: "easy"
-    },
+      },
 
-    explanation: {
+      difficulty: {
+
         type: String,
+
+        enum: [
+
+          "Easy",
+
+          "Medium",
+
+          "Hard"
+
+        ],
+
+        default: "Easy"
+
+      },
+
+      explanation: {
+
+        type: String,
+
         trim: true
-    },
 
-    // =========================
-    // MCQ FIELDS
-    // =========================
+      },
 
-    options: [{
+      status: {
+
         type: String,
-        trim: true
-    }],
 
-    correctAnswer: {
+        enum: [
+
+          "Active",
+
+          "Draft",
+
+          "Archived"
+
+        ],
+
+        default: "Active"
+
+      },
+
+      // ======================================
+      // MCQ FIELDS
+      // ======================================
+
+      options: [
+
+        {
+
+          type: String,
+
+          trim: true
+
+        }
+
+      ],
+
+      correctAnswer: {
+
         type: String,
+
         trim: true
-    },
 
-    // =========================
-    // CODING QUESTION FIELDS
-    // =========================
+      },
 
-    starterCode: {
+      // ======================================
+      // CODING QUESTION FIELDS
+      // ======================================
+
+      problemStatement: {
+
         type: String
-    },
 
-    inputFormat: {
+      },
+
+      starterCode: {
+
         type: String
-    },
 
-    outputFormat: {
+      },
+
+      inputFormat: {
+
         type: String
-    },
 
-    constraints: {
+      },
+
+      outputFormat: {
+
         type: String
-    },
 
-    sampleInput: {
+      },
+
+      constraints: {
+
         type: String
-    },
 
-    sampleOutput: {
+      },
+
+      sampleInput: {
+
         type: String
-    },
 
-    expectedSolution: {
+      },
+
+      sampleOutput: {
+
         type: String
-    },
 
-    // =========================
-    // MANAGEMENT
-    // =========================
+      },
 
-    isActive: {
+      expectedSolution: {
+
+        type: String
+
+      },
+
+      // ======================================
+      // TEST CASES
+      // ======================================
+
+      testCases: [
+
+        {
+
+          input: {
+
+            type: String
+
+          },
+
+          output: {
+
+            type: String
+
+          }
+
+        }
+
+      ],
+
+      // ======================================
+      // MANAGEMENT
+      // ======================================
+
+      isActive: {
+
         type: Boolean,
+
         default: true
+
+      },
+
+      createdBy: {
+
+        type:
+          mongoose.Schema.Types.ObjectId,
+
+        ref: "User"
+
+      }
+
     },
 
-    createdBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
-    }
-},
-{
-    timestamps: true
-}
-);
+    {
 
-module.exports = mongoose.model("Question", questionSchema);
+      timestamps: true
+
+    }
+
+  );
+
+module.exports =
+  mongoose.model(
+
+    "Question",
+
+    questionSchema
+
+  );

@@ -1,94 +1,187 @@
 const mongoose = require("mongoose");
 
-const assessmentSchema = new mongoose.Schema(
-{
-    course: {
-        type: mongoose.Schema.Types.ObjectId,
+const assessmentSchema =
+  new mongoose.Schema(
+
+    {
+
+      // ======================================
+      // OPTIONAL COURSE LINK
+      // ======================================
+
+      course: {
+
+        type:
+          mongoose.Schema.Types.ObjectId,
+
         ref: "Course",
-        required: true
-    },
 
-    title: {
+        required: false
+
+      },
+
+      // ======================================
+      // BASIC DETAILS
+      // ======================================
+
+      title: {
+
         type: String,
+
         required: true,
-        trim: true
-    },
 
-    description: {
+        trim: true
+
+      },
+
+      description: {
+
         type: String,
+
         trim: true
-    },
 
-    // Total questions to display
-    totalMCQQuestions: {
+      },
+
+      // ======================================
+      // QUESTION CONFIGURATION
+      // ======================================
+
+      totalMCQQuestions: {
+
         type: Number,
+
         default: 15
-    },
 
-    totalCodingQuestions: {
+      },
+
+      totalCodingQuestions: {
+
         type: Number,
+
         default: 5
-    },
 
-    // Passing percentage
-    passingMarks: {
+      },
+
+      // ======================================
+      // PASSING SETTINGS
+      // ======================================
+
+      passingMarks: {
+
         type: Number,
+
         default: 70
-    },
 
-    // Duration in minutes
-    duration: {
+      },
+
+      // ======================================
+      // EXAM DURATION
+      // ======================================
+
+      duration: {
+
         type: Number,
+
         default: 30
-    },
 
-    // Shuffle settings
-    shuffleQuestions: {
+      },
+
+      // ======================================
+      // SHUFFLE SETTINGS
+      // ======================================
+
+      shuffleQuestions: {
+
         type: Boolean,
-        default: true
-    },
 
-    shuffleOptions: {
+        default: true
+
+      },
+
+      shuffleOptions: {
+
         type: Boolean,
-        default: true
-    },
 
-    // Security features
-    enableTabSwitchLimit: {
+        default: true
+
+      },
+
+      // ======================================
+      // SECURITY FEATURES
+      // ======================================
+
+      enableTabSwitchLimit: {
+
         type: Boolean,
-        default: true
-    },
 
-    maxTabSwitches: {
+        default: true
+
+      },
+
+      maxTabSwitches: {
+
         type: Number,
+
         default: 3
-    },
 
-    autoSubmitOnTabLimit: {
+      },
+
+      autoSubmitOnTabLimit: {
+
         type: Boolean,
+
         default: true
-    },
 
-    // Assessment state
-    isPublished: {
+      },
+
+      // ======================================
+      // STATUS
+      // ======================================
+
+      isPublished: {
+
         type: Boolean,
+
         default: false
-    },
 
-    isActive: {
+      },
+
+      isActive: {
+
         type: Boolean,
+
         default: true
+
+      },
+
+      // ======================================
+      // CREATED BY
+      // ======================================
+
+      createdBy: {
+
+        type:
+          mongoose.Schema.Types.ObjectId,
+
+        ref: "User"
+
+      }
+
     },
 
-    // Created by admin
-    createdBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
-    }
-},
-{
-    timestamps: true
-}
-);
+    {
 
-module.exports = mongoose.model("Assessment", assessmentSchema);
+      timestamps: true
+
+    }
+
+  );
+
+module.exports =
+  mongoose.model(
+
+    "Assessment",
+
+    assessmentSchema
+
+  );

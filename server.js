@@ -8,17 +8,17 @@ dotenv.config();
 
 const app = express();
 
-const port = process.env.PORT || 5000;
-
+const port =
+  process.env.PORT || 5000;
 
 // ======================================
-// MONGODB CONNECTION
+// DATABASE CONNECTION
 // ======================================
 
-const connectDB = require("./db");
+const connectDB =
+  require("./db");
 
 connectDB();
-
 
 // ======================================
 // MIDDLEWARES
@@ -28,228 +28,316 @@ app.use(cors());
 
 app.use(express.json());
 
-app.use(express.urlencoded({ extended: true }));
+app.use(
+  express.urlencoded({
 
+    extended: true
+
+  })
+);
 
 // ======================================
-// STATIC UPLOADS ACCESS
+// STATIC FILES
 // ======================================
 
 app.use(
+
   "/uploads",
+
   express.static("uploads")
+
 );
 
-
 // ======================================
-// ROUTES IMPORTS
+// ROUTE IMPORTS
 // ======================================
 
-// AUTH ROUTES
+// AUTH
 
 const authRoutes =
   require("./routes/auth");
 
-// COURSE ROUTES
+// COURSES
 
 const courseRoutes =
   require("./routes/courses");
 
-// VIDEO ROUTES
+// VIDEOS
 
 const videoRoutes =
   require("./routes/videos");
 
-// STUDENT ROUTES
+// STUDENTS
 
 const studentRoutes =
   require("./routes/studentRoutes");
 
-// ENROLLMENT ROUTES
+// ENROLLMENTS
 
 const enrollmentRoutes =
   require("./routes/enrollments");
 
-// PAYMENT ROUTES
+// PAYMENTS
 
 const paymentRoutes =
   require("./routes/payments");
 
 // ======================================
-// PHASE 5 ROUTES
+// PHASE 5
 // ======================================
+
+// PROGRESS ENGINE
 
 const progressRoutes =
-  require("./routes/progressRoutes");
+  require(
+    "./routes/progressRoutes"
+  );
 
 // ======================================
-// PHASE 6 ROUTES
+// PHASE 6
 // ======================================
 
-// ADMIN ASSESSMENT ROUTES
+// ADMIN ASSESSMENTS
 
 const assessmentRoutes =
-  require("./routes/assessments");
+  require(
+    "./routes/assessments"
+  );
 
-// STUDENT ASSESSMENT ROUTES
+// STUDENT ASSESSMENTS
 
 const studentAssessmentRoutes =
   require(
     "./routes/studentAssessmentRoutes"
   );
 
+// QUESTIONS
+
+const questionRoutes =
+  require(
+    "./routes/questionRoutes"
+  );
 
 // ======================================
-// ENABLED ROUTES
+// ENABLE ROUTES
 // ======================================
 
 // AUTH
 
 app.use(
+
   "/api/auth",
+
   authRoutes
+
 );
 
 // COURSES
 
 app.use(
+
   "/api/courses",
+
   courseRoutes
+
 );
 
 // VIDEOS
 
 app.use(
+
   "/api/videos",
+
   videoRoutes
+
 );
 
 // STUDENTS
 
 app.use(
+
   "/api/students",
+
   studentRoutes
+
 );
 
 // ENROLLMENTS
 
 app.use(
+
   "/api/enrollments",
+
   enrollmentRoutes
+
 );
 
 // PAYMENTS
 
 app.use(
+
   "/api/payments",
+
   paymentRoutes
+
 );
 
-
 // ======================================
-// PHASE 5 ROUTES ENABLE
+// PHASE 5 ROUTES
 // ======================================
 
-// PROGRESS ENGINE
+// PROGRESS
 
 app.use(
+
   "/api/progress",
+
   progressRoutes
+
 );
 
-
 // ======================================
-// PHASE 6 ROUTES ENABLE
+// PHASE 6 ROUTES
 // ======================================
 
 // ADMIN ASSESSMENTS
 
 app.use(
+
   "/api/assessments",
+
   assessmentRoutes
+
 );
 
 // STUDENT ASSESSMENT ENGINE
 
 app.use(
+
   "/api/student-assessments",
+
   studentAssessmentRoutes
+
 );
 
+// QUESTION ENGINE
+
+app.use(
+
+  "/api/questions",
+
+  questionRoutes
+
+);
 
 // ======================================
 // DATABASE TEST ROUTE
 // ======================================
 
-app.get("/db-test", async (req, res) => {
+app.get(
 
-  try {
+  "/db-test",
 
-    res.json({
+  async (req, res) => {
 
-      success: true,
+    try {
 
-      message:
-        "MongoDB Connected ✅",
+      res.json({
 
-    });
+        success: true,
 
-  } catch (err) {
+        message:
+          "MongoDB Connected ✅"
 
-    res.status(500).json({
+      });
 
-      success: false,
+    } catch (err) {
 
-      error: err.message,
+      res.status(500).json({
 
-    });
+        success: false,
+
+        error:
+          err.message
+
+      });
+
+    }
 
   }
 
-});
-
+);
 
 // ======================================
 // HOME ROUTE
 // ======================================
 
-app.get("/", (req, res) => {
+app.get(
 
-  res.send("Backend Running 🚀");
+  "/",
 
-});
+  (req, res) => {
 
+    res.send(
+      "Backend Running 🚀"
+    );
+
+  }
+
+);
 
 // ======================================
 // GLOBAL ERROR HANDLER
 // ======================================
 
-app.use((err, req, res, next) => {
+app.use(
 
-  console.log(err);
+  (
 
-  res.status(500).json({
+    err,
 
-    success: false,
+    req,
 
-    message:
-      err.message || "Server Error",
+    res,
 
-  });
+    next
 
-});
+  ) => {
 
+    console.log(err);
+
+    res.status(500).json({
+
+      success: false,
+
+      message:
+
+        err.message ||
+
+        "Server Error"
+
+    });
+
+  }
+
+);
 
 // ======================================
 // START SERVER
 // ======================================
 
-app.listen(port, () => {
+app.listen(
 
-  console.log(
+  port,
 
-    `Server is running on port ${port}`
+  () => {
 
-  );
+    console.log(
 
-});
+      `Server is running on port ${port}`
+
+    );
+
+  }
+
+);

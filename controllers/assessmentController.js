@@ -1,8 +1,11 @@
-const Assessment = require("../models/Assessment");
+const Assessment =
+  require("../models/Assessment");
 
-const Question = require("../models/Question");
+const Question =
+  require("../models/Question");
 
-const ExamAttempt = require("../models/ExamAttempt");
+const ExamAttempt =
+  require("../models/ExamAttempt");
 
 // ======================================================
 // GET ALL ASSESSMENTS
@@ -153,7 +156,15 @@ const addQuestion = async (
 
     const {
 
-      assessment,
+      // ======================================
+      // FRONTEND FIELD
+      // ======================================
+
+      assessmentId,
+
+      // ======================================
+      // COMMON FIELDS
+      // ======================================
 
       course,
 
@@ -171,7 +182,13 @@ const addQuestion = async (
 
       explanation,
 
+      status,
+
+      // ======================================
       // CODING FIELDS
+      // ======================================
+
+      title,
 
       starterCode,
 
@@ -185,18 +202,51 @@ const addQuestion = async (
 
       sampleOutput,
 
-      expectedSolution
+      expectedSolution,
+
+      testCases,
+
+      problemStatement
 
     } = req.body;
+
+    // ======================================
+    // VALIDATION
+    // ======================================
+
+    if (!assessmentId) {
+
+      return res.status(400).json({
+
+        success: false,
+
+        message:
+          "Assessment ID is required"
+
+      });
+
+    }
+
+    // ======================================
+    // CREATE QUESTION
+    // ======================================
 
     const newQuestion =
       await Question.create({
 
-        assessment,
+        // FIXED FIELD
+
+        assessment:
+          assessmentId,
 
         course,
 
-        type,
+        // LOWERCASE TYPES
+
+        type:
+          type?.toLowerCase(),
+
+        // MCQ FIELDS
 
         question,
 
@@ -204,11 +254,19 @@ const addQuestion = async (
 
         correctAnswer,
 
+        // COMMON
+
         marks,
 
         difficulty,
 
         explanation,
+
+        status,
+
+        // CODING FIELDS
+
+        title,
 
         starterCode,
 
@@ -223,6 +281,12 @@ const addQuestion = async (
         sampleOutput,
 
         expectedSolution,
+
+        testCases,
+
+        problemStatement,
+
+        // ADMIN
 
         createdBy:
           req.user._id
@@ -288,7 +352,9 @@ const getAssessmentQuestions =
 
       }
 
+      // ======================================
       // RANDOM MCQ QUESTIONS
+      // ======================================
 
       const mcqQuestions =
         await Question.aggregate([
@@ -321,7 +387,9 @@ const getAssessmentQuestions =
 
         ]);
 
+      // ======================================
       // RANDOM CODING QUESTIONS
+      // ======================================
 
       const codingQuestions =
         await Question.aggregate([
@@ -503,7 +571,9 @@ const submitAssessment = async (
 
       let marksObtained = 0;
 
+      // ======================================
       // MCQ EVALUATION
+      // ======================================
 
       if (
 
@@ -529,7 +599,9 @@ const submitAssessment = async (
 
       }
 
+      // ======================================
       // CODING PLACEHOLDER
+      // ======================================
 
       if (
 
