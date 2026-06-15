@@ -82,6 +82,13 @@ const enrollmentRoutes =
 const paymentRoutes =
   require("./routes/payments");
 
+
+// CERTIFICATES
+
+const certificateRoutes =
+  require("./routes/certificateRoutes");
+
+
 // ======================================
 // PHASE 5
 // ======================================
@@ -179,6 +186,16 @@ app.use(
   "/api/payments",
 
   paymentRoutes
+
+);
+
+// CERTIFICATES
+
+app.use(
+
+  "/api/certificates",
+
+  certificateRoutes
 
 );
 

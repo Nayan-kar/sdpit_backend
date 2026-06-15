@@ -25,6 +25,34 @@ const certificateSchema = new mongoose.Schema(
         unique: true
     },
 
+    enrollmentNo: {
+        type: String
+    },
+
+    courseId: {
+        type: String
+    },
+
+    studentName: {
+        type: String
+    },
+
+    guardianName: {
+        type: String
+    },
+
+    courseName: {
+        type: String
+    },
+
+    duration: {
+        type: String
+    },
+
+    grade: {
+        type: String
+    },
+
     issueDate: {
         type: Date,
         default: Date.now
